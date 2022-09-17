@@ -36,9 +36,9 @@ if "%cswinrt_configuration%"=="" (
   set cswinrt_configuration=Release
 )
 
-if "%cswinrt_version_number%"=="" set cswinrt_version_number=2.1.0.0
-if "%cswinrt_version_string%"=="" set cswinrt_version_string=2.1.0-private.0
-if "%cswinrt_assembly_version%"=="" set cswinrt_assembly_version=2.1.0.0
+if "%cswinrt_version_number%"=="" set cswinrt_version_number=2.2.0.0
+if "%cswinrt_version_string%"=="" set cswinrt_version_string=2.2.0-private.0
+if "%cswinrt_assembly_version%"=="" set cswinrt_assembly_version=2.2.0.0
 
 if "%cswinrt_baseline_breaking_compat_errors%"=="" set cswinrt_baseline_breaking_compat_errors=false
 if "%cswinrt_baseline_assembly_version_compat_errors%"=="" set cswinrt_baseline_assembly_version_compat_errors=false
