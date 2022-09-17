@@ -2,7 +2,6 @@
 if /i "%cswinrt_echo%" == "on" @echo on
 
 set this_dir=%~dp0
-
 rem Preserve above for Visual Studio launch inheritance
 setlocal ENABLEDELAYEDEXPANSION
 
@@ -61,7 +60,7 @@ if ErrorLevel 1 (
   set nuget_params=-MSBuildPath !msbuild_path!
 ) else (
   set msbuild_path=
-  set nuget_params= 
+  set nuget_params=
 )
 :skip_build_tools
 
@@ -83,6 +82,7 @@ if not exist %nuget_dir%\nuget.exe powershell -Command "Invoke-WebRequest https:
 %nuget_dir%\nuget update -self
 rem Note: packages.config-based (vcxproj) projects do not support msbuild /t:restore
 set NUGET_RESTORE_MSBUILD_ARGS=/p:platform="%cswinrt_platform%"
+if "%CIBuildReason%"=="CI" set NUGET_RESTORE_MSBUILD_ARGS=%NUGET_RESTORE_MSBUILD_ARGS%;CIBuildReason=%CIBuildReason%
 call :exec %nuget_dir%\nuget.exe restore %nuget_params% %this_dir%cswinrt.sln
 
 :build
