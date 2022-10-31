@@ -36,9 +36,9 @@ if "%cswinrt_configuration%"=="" (
   set cswinrt_configuration=Release
 )
 
-if "%cswinrt_version_number%"=="" set cswinrt_version_number=2.2.0.0
-if "%cswinrt_version_string%"=="" set cswinrt_version_string=2.2.0-private.0
-if "%cswinrt_assembly_version%"=="" set cswinrt_assembly_version=2.2.0.0
+if "%cswinrt_version_number%"=="" set cswinrt_version_number=0.0.0.0
+if "%cswinrt_version_string%"=="" set cswinrt_version_string=0.0.0-private.0
+if "%cswinrt_assembly_version%"=="" set cswinrt_assembly_version=0.0.0.0
 
 if "%cswinrt_baseline_breaking_compat_errors%"=="" set cswinrt_baseline_breaking_compat_errors=false
 if "%cswinrt_baseline_assembly_version_compat_errors%"=="" set cswinrt_baseline_assembly_version_compat_errors=false
@@ -70,13 +70,13 @@ if not "%cswinrt_label%"=="" goto %cswinrt_label%
 
 :restore
 rem When a preview nuget is required, update -self doesn't work, so manually update 
-if exist %nuget_dir%\nuget.exe (
-  %nuget_dir%\nuget.exe | findstr 5.9 >nul
-  if ErrorLevel 1 (
-    echo Updating to nuget 5.9
-    rd /s/q %nuget_dir% >nul 2>&1
-  )
-)
+rem if exist %nuget_dir%\nuget.exe (
+rem   %nuget_dir%\nuget.exe | findstr 5.9 >nul
+rem   if ErrorLevel 1 (
+rem     echo Updating to nuget 5.9
+rem     rd /s/q %nuget_dir% >nul 2>&1
+rem   )
+rem )
 if not exist %nuget_dir% md %nuget_dir%
 if not exist %nuget_dir%\nuget.exe powershell -Command "Invoke-WebRequest https://dist.nuget.org/win-x86-commandline/v5.8.0-preview.2/nuget.exe -OutFile %nuget_dir%\nuget.exe"
 %nuget_dir%\nuget update -self
