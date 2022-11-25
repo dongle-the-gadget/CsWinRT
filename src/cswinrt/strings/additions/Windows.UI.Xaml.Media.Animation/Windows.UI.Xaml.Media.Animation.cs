@@ -1,7 +1,7 @@
 
 namespace Windows.UI.Xaml.Media.Animation
 {
-    using Windows.Foundation;
+    using global::Windows.Foundation;
 
     [global::WinRT.WindowsRuntimeType("Windows.Foundation.UniversalApiContract")]
     [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Windows.UI.Xaml.Media.Animation.KeyTime))]

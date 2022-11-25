@@ -30,5 +30,5 @@
   <Target Name="CleanIntermediateDirs" Condition="'$(CleanIntermediateDirs)'=='true'" AfterTargets="Build">
     <RemoveDir Directories="$(IntDir)" />
   </Target>
-
+	
 </Project>
