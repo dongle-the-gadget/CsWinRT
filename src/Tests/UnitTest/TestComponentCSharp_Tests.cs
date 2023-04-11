@@ -9,7 +9,6 @@ using WinRT;
 
 using Windows.Foundation;
 using Windows.UI;
-using Windows.Security.Credentials.UI;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Microsoft.UI.Xaml;
@@ -30,6 +29,7 @@ using Windows.Security.Cryptography.Core;
 using System.Reflection;
 using Windows.Devices.Enumeration.Pnp;
 using System.Diagnostics;
+using Windows.Devices.Enumeration;
 
 #if NET
 using WeakRefNS = System;
@@ -51,6 +51,13 @@ namespace UnitTest
         public TestCSharp()
         {
             TestObject = new Class();
+        }
+
+        public enum E { A, B, C }
+
+        public struct Estruct
+        {
+            E value;
         }
 
 
@@ -1361,7 +1368,7 @@ namespace UnitTest
 
             private void OnChanged()
             {
-                VectorChanged.Invoke(this, _observation = new TObservation());
+                VectorChanged?.Invoke(this, _observation = new TObservation());
             }
 
             public event BindableVectorChangedEventHandler VectorChanged;
@@ -2152,6 +2159,48 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestGetPropertyType()
+        {
+            Array arr = new[] { E.A, E.B, E.C };
+            Array arr2 = new[] { new Estruct(), new Estruct() };
+            Array arr3 = new int[] { 1, 2, 3 };
+            IList<E> arr4 = new List<E>() { E.A, E.B, E.C };
+            Array arr5 = new PropertyType[] { PropertyType.UInt8, PropertyType.Int16, PropertyType.UInt16 };
+
+            Assert.Equal(-1, Class.GetPropertyType(arr));
+            Assert.Equal(-1, Class.GetPropertyType(arr2));
+            Assert.Equal((int)PropertyType.Int32Array, Class.GetPropertyType(arr3));
+            Assert.Equal(-1, Class.GetPropertyType(arr4));
+            Assert.Equal((int)PropertyType.OtherTypeArray, Class.GetPropertyType(arr5));
+            Assert.Equal(-1, Class.GetPropertyType(arr.GetValue(0)));
+            Assert.Equal(-1, Class.GetPropertyType(arr2.GetValue(0)));
+            Assert.Equal((int)PropertyType.Int32, Class.GetPropertyType(arr3.GetValue(0)));
+            Assert.Equal(-1, Class.GetPropertyType(arr4[0]));
+            Assert.Equal((int)PropertyType.OtherType, Class.GetPropertyType(arr5.GetValue(0)));
+        }
+
+        [Fact]
+        public void TestGetRuntimeClassName()
+        {
+            Array arr = new[] { E.A, E.B, E.C };
+            Array arr2 = new[] { new Estruct(), new Estruct() };
+            Array arr3 = new int[] { 1, 2, 3 };
+            IList<E> arr4 = new List<E>() { E.A, E.B, E.C };
+            Array arr5 = new PropertyType[] { PropertyType.UInt8, PropertyType.Int16, PropertyType.UInt16 };
+
+            Assert.Equal(string.Empty, Class.GetName(arr));
+            Assert.Equal(string.Empty, Class.GetName(arr2));
+            Assert.Equal("Windows.Foundation.IReferenceArray`1<Int32>", Class.GetName(arr3));
+            Assert.Equal("Microsoft.UI.Xaml.Interop.IBindableVector", Class.GetName(arr4));
+            Assert.Equal("Windows.Foundation.IReferenceArray`1<Windows.Foundation.PropertyType>", Class.GetName(arr5));
+            Assert.Equal(string.Empty, Class.GetName(arr.GetValue(0)));
+            Assert.Equal(string.Empty, Class.GetName(arr2.GetValue(0)));
+            Assert.Equal("Windows.Foundation.IReference`1<Int32>", Class.GetName(arr3.GetValue(0)));
+            Assert.Equal(string.Empty, Class.GetName(arr4[0]));
+            Assert.Equal("Windows.Foundation.IReference`1<Windows.Foundation.PropertyType>", Class.GetName(arr5.GetValue(0)));
+        }
+
+        [Fact]
         public void TestGeneratedRuntimeClassName_Primitive()
         {
             IInspectable inspectable = new IInspectable(ComWrappersSupport.CreateCCWForObject(2));
@@ -2277,6 +2326,30 @@ namespace UnitTest
         {
             using var ccw = ComWrappersSupport.CreateCCWForObject(new List<ManagedType>());
             using var qiResult = ccw.As(GuidGenerator.GetIID(typeof(global::System.Collections.Generic.IEnumerable<object>).GetHelperType()));
+        }
+
+        internal class ManagedType2 : List<ManagedType2> { }
+
+        internal class ManagedType3 : List<ManagedType3>, IDisposable
+        {
+            public void Dispose()
+            {
+            }
+        }
+
+        [Fact]
+        public void CCWOfListOfManagedType2()
+        {
+            using var ccw = ComWrappersSupport.CreateCCWForObject(new ManagedType2());
+            var qiResult = ccw.As(GuidGenerator.GetIID(typeof(global::System.Collections.Generic.IEnumerable<object>).GetHelperType()));
+        }
+
+        [Fact]
+        public void CCWOfListOfManagedType3()
+        {
+            using var ccw = ComWrappersSupport.CreateCCWForObject(new ManagedType3());
+            var qiResult = ccw.As(GuidGenerator.GetIID(typeof(global::System.Collections.Generic.IEnumerable<object>).GetHelperType()));
+            var qiResult2 = ccw.As(GuidGenerator.GetIID(typeof(global::System.Collections.Generic.IEnumerable<IDisposable>).GetHelperType()));
         }
 
         [Fact]
@@ -2523,7 +2596,7 @@ namespace UnitTest
             Assert.NotNull(cryptoKey);
         }
 
-        [Fact(Skip="Operation not supported")]
+        [Fact]
         public void TestIBindableIterator()
         {
             CustomBindableIteratorTest bindableIterator = new CustomBindableIteratorTest();
@@ -2544,6 +2617,47 @@ namespace UnitTest
         {
             CustomBindableVectorTest vector = new CustomBindableVectorTest();
             Assert.NotNull(vector);
+            Assert.Equal(1, vector.Count);
+            Assert.False(vector.IsSynchronized);
+            Assert.NotNull(vector.SyncRoot);
+            Assert.Equal(1, vector[0]);
+
+            var enumerator = ((IEnumerable)vector).GetEnumerator();
+            Assert.NotNull(enumerator);
+        }
+
+        [Fact]
+        public void TestBindableObservableVector()
+        {
+            CustomBindableObservableVectorTest vector = new CustomBindableObservableVectorTest();
+            Assert.Equal(1, vector.Count);
+            Assert.False(vector.IsSynchronized);
+            Assert.NotNull(vector.SyncRoot);
+            Assert.Equal(1, vector[0]);
+            vector.Clear();
+        }
+
+        [Fact]
+        public void TestNonProjectedBindableObservableVector()
+        {
+            var expected = new int[] { 0, 1, 2 };
+            var observable = new ManagedBindableObservable(expected);
+            var nativeObservable = TestObject.GetBindableObservableVector(observable);
+            Assert.Equal(3, ((ICollection)(object)nativeObservable).Count);
+            Assert.Equal(3, nativeObservable.Count);
+            Assert.NotNull(nativeObservable.SyncRoot);
+            Assert.Equal(0, nativeObservable[0]);
+            nativeObservable.Clear();
+            Assert.Equal(0, nativeObservable.Count);
+        }
+
+        [Fact(Skip = "InvalidOperationException due to missing non-generic IEnumerator #1302")]
+        public void TestIterator()
+        {
+            CustomIteratorTest iterator = new CustomIteratorTest();
+            iterator.MoveNext();
+            Assert.Equal(2, iterator.Current);
+            Assert.Equal(2, ((IEnumerator)iterator).Current);
         }
 
         [Fact]
@@ -2911,6 +3025,48 @@ namespace UnitTest
         {
             CustomExperimentClass custom = new CustomExperimentClass();
             custom.f();
+        }
+
+        void OnDeviceAdded(DeviceWatcher sender, DeviceInformation args)
+        {
+        }
+
+        void OnDeviceUpdated(DeviceWatcher sender, DeviceInformationUpdate args)
+        {
+        }
+
+        [Fact]
+        public void TestWeakReferenceEventsFromMultipleContexts()
+        {
+            SemaphoreSlim semaphore = new SemaphoreSlim(0);
+            DeviceWatcher watcher = null;
+
+            Thread staThread = new Thread(() =>
+            {
+                Assert.True(Thread.CurrentThread.GetApartmentState() == ApartmentState.STA);
+
+                watcher = DeviceInformation.CreateWatcher();
+                var exception = Record.Exception(() => { 
+                    watcher.Added += OnDeviceAdded; 
+                });
+                Assert.Null(exception);
+
+                Thread mtaThread = new Thread(() =>
+                {
+                    Assert.True(Thread.CurrentThread.GetApartmentState() == ApartmentState.MTA);
+
+                    exception = Record.Exception(() => { 
+                        watcher.Updated += OnDeviceUpdated; 
+                    });
+                    Assert.Null(exception);
+                });
+                mtaThread.SetApartmentState(ApartmentState.MTA);
+                mtaThread.Start();
+                mtaThread.Join();
+            });
+            staThread.SetApartmentState(ApartmentState.STA);
+            staThread.Start();
+            staThread.Join();
         }
     }
 }

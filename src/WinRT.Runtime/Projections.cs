@@ -102,6 +102,7 @@ namespace WinRT
 #if NET
             CustomTypeToHelperTypeMappings.Add(typeof(ICollection<>), typeof(ABI.System.Collections.Generic.ICollection<>));
             CustomTypeToHelperTypeMappings.Add(typeof(IReadOnlyCollection<>), typeof(ABI.System.Collections.Generic.IReadOnlyCollection<>));
+            CustomTypeToHelperTypeMappings.Add(typeof(ICollection), typeof(ABI.System.Collections.ICollection));
 #endif
             RegisterCustomAbiTypeMappingNoLock(typeof(EventHandler), typeof(ABI.System.EventHandler));
 
@@ -338,7 +339,7 @@ namespace WinRT
             return true;
         }
 
-        private static HashSet<Type> GetCompatibleTypes(Type type)
+        private static HashSet<Type> GetCompatibleTypes(Type type, Stack<Type> typeStack)
         {
             HashSet<Type> compatibleTypes = new HashSet<Type>();
 
@@ -350,7 +351,7 @@ namespace WinRT
                 }
 
                 if (iface.IsConstructedGenericType
-                    && TryGetCompatibleWindowsRuntimeTypesForVariantType(iface, out var compatibleIfaces))
+                    && TryGetCompatibleWindowsRuntimeTypesForVariantType(iface, typeStack, out var compatibleIfaces))
                 {
                     compatibleTypes.UnionWith(compatibleIfaces);
                 }
@@ -409,7 +410,7 @@ namespace WinRT
             }
         }
 
-        internal static bool TryGetCompatibleWindowsRuntimeTypesForVariantType(Type type, out IEnumerable<Type> compatibleTypes)
+        internal static bool TryGetCompatibleWindowsRuntimeTypesForVariantType(Type type, Stack<Type> typeStack, out IEnumerable<Type> compatibleTypes)
         {
             compatibleTypes = null;
             if (!type.IsConstructedGenericType)
@@ -423,6 +424,19 @@ namespace WinRT
             {
                 return false;
             }
+
+            if (typeStack == null)
+            {
+                typeStack = new Stack<Type>();
+            }
+            else
+            {
+                if (typeStack.Contains(type))
+                {
+                    return false;
+                }
+            }
+            typeStack.Push(type);
 
             var genericConstraints = definition.GetGenericArguments();
             var genericArguments = type.GetGenericArguments();
@@ -439,17 +453,19 @@ namespace WinRT
                 }
                 else if (!argumentCovariantObject)
                 {
+                    typeStack.Pop();
                     return false;
                 }
 
                 if (argumentCovariantObject)
                 {
-                    compatibleTypesForGeneric.AddRange(GetCompatibleTypes(genericArguments[i]));
+                    compatibleTypesForGeneric.AddRange(GetCompatibleTypes(genericArguments[i], typeStack));
                 }
 
                 compatibleTypesPerGeneric.Add(compatibleTypesForGeneric);
             }
 
+            typeStack.Pop();
             compatibleTypes = GetAllPossibleTypeCombinations(compatibleTypesPerGeneric, definition);
             return true;
         }

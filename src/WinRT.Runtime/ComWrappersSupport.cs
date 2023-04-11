@@ -126,13 +126,27 @@ namespace WinRT
 
         public static ObjectReference<T> GetObjectReferenceForInterface<T>(IntPtr externalComObject, Guid iid)
         {
+            return GetObjectReferenceForInterface<T>(externalComObject, iid, true);
+        }
+
+        internal static ObjectReference<T> GetObjectReferenceForInterface<T>(IntPtr externalComObject, Guid iid, bool requireQI)
+        {
             if (externalComObject == IntPtr.Zero)
             {
                 return null;
             }
 
-            Marshal.ThrowExceptionForHR(Marshal.QueryInterface(externalComObject, ref iid, out IntPtr ptr));
-            ObjectReference<T> objRef = ObjectReference<T>.Attach(ref ptr);
+            ObjectReference<T> objRef;
+            if (requireQI)
+            {
+                Marshal.ThrowExceptionForHR(Marshal.QueryInterface(externalComObject, ref iid, out IntPtr ptr));
+                objRef = ObjectReference<T>.Attach(ref ptr);
+            }
+            else
+            {
+                objRef = ObjectReference<T>.FromAbi(externalComObject);
+            }
+
             if (IsFreeThreaded(objRef))
             {
                 return objRef;
@@ -193,7 +207,7 @@ namespace WinRT
                     });
                 }
 
-                if (ShouldProvideIReference(type))
+                if (type.ShouldProvideIReference())
                 {
                     entries.Add(IPropertyValueEntry);
                     entries.Add(ProvideIReference(type));
@@ -222,7 +236,7 @@ namespace WinRT
                     }
 
                     if (iface.IsConstructedGenericType
-                        && Projections.TryGetCompatibleWindowsRuntimeTypesForVariantType(iface, out var compatibleIfaces))
+                        && Projections.TryGetCompatibleWindowsRuntimeTypesForVariantType(iface, null, out var compatibleIfaces))
                     {
                         foreach (var compatibleIface in compatibleIfaces)
                         {
@@ -236,7 +250,25 @@ namespace WinRT
                     }
                 }
 
-                if (objType.IsGenericType && objType.GetGenericTypeDefinition() == typeof(System.Collections.Generic.KeyValuePair<,>))
+#if !NET
+                // We can't easily determine from just the type
+                // if the array is an "single dimension index from zero"-array in .NET Standard 2.0,
+                // so just approximate it.
+                // (Other array types will be blocked in other code-paths anyway where we have an object.)
+                if (type.IsArray && type.GetArrayRank() == 1)
+#else
+                if (type.IsSZArray)
+#endif
+                {
+                    // We treat arrays as if they implemented IIterable<T>, IVector<T>, and IVectorView<T> (WinRT only)
+                    var elementType = type.GetElementType();
+                    if (elementType.ShouldProvideIReference())
+                    {
+                        entries.Add(IPropertyValueEntry);
+                        entries.Add(ProvideIReferenceArray(type));
+                    }
+                }
+                else if (objType.IsGenericType && objType.GetGenericTypeDefinition() == typeof(System.Collections.Generic.KeyValuePair<,>))
                 {
                     var ifaceAbiType = objType.FindHelperType();
                     entries.Add(new ComInterfaceEntry
@@ -245,15 +277,10 @@ namespace WinRT
                         Vtable = (IntPtr)ifaceAbiType.GetAbiToProjectionVftblPtr()
                     });
                 }
-                else if (ShouldProvideIReference(type))
+                else if (type.ShouldProvideIReference())
                 {
                     entries.Add(IPropertyValueEntry);
                     entries.Add(ProvideIReference(type));
-                }
-                else if (ShouldProvideIReferenceArray(type))
-                {
-                    entries.Add(IPropertyValueEntry);
-                    entries.Add(ProvideIReferenceArray(type));
                 }
             }
 
@@ -330,21 +357,6 @@ namespace WinRT
             return (
                 new InspectableInfo(type, iids),
                 interfaceTableEntries);
-        }
-
-        private static bool IsNullableT(Type implementationType)
-        {
-            return implementationType.IsGenericType && implementationType.GetGenericTypeDefinition() == typeof(System.Nullable<>);
-        }
-
-        private static bool IsAbiNullableDelegate(Type implementationType)
-        {
-            return implementationType.IsGenericType && implementationType.GetGenericTypeDefinition() == typeof(ABI.System.Nullable_Delegate<>);
-        }
-
-        private static bool IsIReferenceArray(Type implementationType)
-        {
-            return implementationType.IsGenericType && implementationType.GetGenericTypeDefinition() == typeof(Windows.Foundation.IReferenceArray<>);
         }
 
         private static Func<IInspectable, object> CreateKeyValuePairFactory(Type type)
@@ -467,7 +479,7 @@ namespace WinRT
 
             if (implementationType.IsValueType)
             {
-                if (IsNullableT(implementationType))
+                if (implementationType.IsNullableT())
                 {
                     return CreateReferenceCachingFactory(CreateNullableTFactory(implementationType));
                 }
@@ -476,11 +488,11 @@ namespace WinRT
                     return CreateReferenceCachingFactory(CreateNullableTFactory(typeof(System.Nullable<>).MakeGenericType(implementationType)));
                 }
             }
-            else if (IsAbiNullableDelegate(implementationType))
+            else if (implementationType.IsAbiNullableDelegate())
             {
                 return CreateReferenceCachingFactory(CreateAbiNullableTFactory(implementationType));
             }
-            else if (IsIReferenceArray(implementationType))
+            else if (implementationType.IsIReferenceArray())
             {
                 return CreateReferenceCachingFactory(CreateArrayFactory(implementationType));
             }
@@ -521,38 +533,6 @@ namespace WinRT
 
             return implementationType;
         }
-
-        private readonly static ConcurrentDictionary<Type, bool> IsIReferenceTypeCache = new ConcurrentDictionary<Type, bool>();
-        private static bool IsIReferenceType(Type type)
-        {
-            static bool IsIReferenceTypeHelper(Type type)
-            {
-                if (type.IsDefined(typeof(WindowsRuntimeTypeAttribute)) ||
-                    WinRT.Projections.IsTypeWindowsRuntimeType(type))
-                    return true;
-                type = type.GetAuthoringMetadataType();
-                if (type is object)
-                {
-                    if (type.IsDefined(typeof(WindowsRuntimeTypeAttribute)) ||
-                        WinRT.Projections.IsTypeWindowsRuntimeType(type))
-                        return true;
-                }
-                return false;
-            }
-
-            return IsIReferenceTypeCache.GetOrAdd(type, (type) =>
-            {
-                if (type == typeof(string) || type.IsTypeOfType())
-                    return true;
-                if (type.IsDelegate())
-                    return IsIReferenceTypeHelper(type);
-                if (!type.IsValueType)
-                    return false;
-                return type.IsPrimitive || IsIReferenceTypeHelper(type);
-            });
-        }
-
-        private static bool ShouldProvideIReference(Type type) => IsIReferenceType(type);
 
         private static ComInterfaceEntry IPropertyValueEntry =>
             new ComInterfaceEntry
@@ -724,12 +704,6 @@ namespace WinRT
             };
         }
 
-        private static bool ShouldProvideIReferenceArray(Type type)
-        {
-            // Check if one dimensional array with lower bound of 0
-            return type.IsArray && type == type.GetElementType().MakeArrayType() && !type.GetElementType().IsArray;
-        }
-
         private static ComInterfaceEntry ProvideIReferenceArray(Type arrayType)
         {
             Type type = arrayType.GetElementType();
@@ -885,7 +859,7 @@ namespace WinRT
 
             internal InspectableInfo(Type type, Guid[] iids)
             {
-                runtimeClassName = new Lazy<string>(() => TypeNameSupport.GetNameForType(type, TypeNameGenerationFlags.GenerateBoxedName | TypeNameGenerationFlags.NoCustomTypeName));
+                runtimeClassName = new Lazy<string>(() => TypeNameSupport.GetNameForType(type, TypeNameGenerationFlags.GenerateBoxedName | TypeNameGenerationFlags.ForGetRuntimeClassName));
                 IIDs = iids;
             }
         }

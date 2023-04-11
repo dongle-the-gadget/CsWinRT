@@ -104,6 +104,81 @@ namespace winrt::TestComponentCSharp::implementation
         }
     };
 
+    struct bindable_observable_vector : winrt::implements<bindable_observable_vector, IBindableObservableVector, IBindableIterable, IBindableVector>
+    {
+        IBindableObservableVector _wrapped;
+
+        bindable_observable_vector(IBindableObservableVector wrapped)
+        {
+            _wrapped = wrapped;
+        }
+
+        IBindableIterator First()
+        {
+            return _wrapped.First();
+        }
+
+        WF::IInspectable GetAt(uint32_t index)
+        {
+            return _wrapped.GetAt(index);
+        }
+
+        uint32_t Size()
+        {
+            return _wrapped.Size();
+        }
+
+        IBindableVectorView GetView()
+        {
+            return _wrapped.GetView();
+        }
+
+        bool IndexOf(WF::IInspectable const& value, uint32_t& index)
+        {
+            return _wrapped.IndexOf(value, index);
+        }
+
+        void SetAt(uint32_t index, WF::IInspectable const& value)
+        {
+            return _wrapped.SetAt(index, value);
+        }
+
+        void InsertAt(uint32_t index, WF::IInspectable const& value)
+        {
+            return _wrapped.InsertAt(index, value);
+        }
+
+        void RemoveAt(uint32_t index)
+        {
+            return _wrapped.RemoveAt(index);
+        }
+
+        void Append(WF::IInspectable const& value)
+        {
+            _wrapped.Append(value);
+        }
+
+        void RemoveAtEnd()
+        {
+            _wrapped.RemoveAtEnd();
+        }
+
+        void Clear()
+        {
+            _wrapped.Clear();
+        }
+
+        winrt::event_token VectorChanged(BindableVectorChangedEventHandler const& handler)
+        {
+            return _wrapped.VectorChanged(handler);
+        }
+
+        void VectorChanged(winrt::event_token const& token) noexcept
+        {
+            _wrapped.VectorChanged(token);
+        }
+    };
+
     struct data_errors_changed_event_args : implements<data_errors_changed_event_args, IDataErrorsChangedEventArgs>
     {
         data_errors_changed_event_args(winrt::hstring name) :
@@ -298,6 +373,18 @@ namespace winrt::TestComponentCSharp::implementation
     {
         _collectionEvent(sender, arg0, arg1);
     }
+    winrt::event_token Class::GuidEvent(TestComponentCSharp::EventWithGuid const& handler)
+    {
+        return _guidEvent.add(handler);
+    }
+    void Class::GuidEvent(winrt::event_token const& token) noexcept
+    {
+        _guidEvent.remove(token);
+    }
+    void Class::InvokeGuidEvent(winrt::guid const& correlationGuid)
+    {
+        _guidEvent(correlationGuid);
+    }
     winrt::event_token Class::NestedEvent(EventHandler<IVector<int32_t>> const& handler)
     {
         return _nestedEvent.add(handler);
@@ -334,6 +421,10 @@ namespace winrt::TestComponentCSharp::implementation
     {
         _returnEvent(arg0);
         return arg0;
+    }
+    winrt::guid Class::TestReturnGuid(winrt::guid const& arg)
+    {
+        return arg;
     }
     int32_t Class::IntProperty()
     {
@@ -1381,6 +1472,11 @@ namespace winrt::TestComponentCSharp::implementation
         });
     }
 
+    IBindableObservableVector Class::GetBindableObservableVector(IBindableObservableVector vector)
+    {
+        return winrt::make<bindable_observable_vector>(vector);
+    }
+
     void Class::CopyProperties(winrt::TestComponentCSharp::IProperties1 const& src)
     {
         ReadWriteProperty(src.ReadWriteProperty());
@@ -1430,6 +1526,20 @@ namespace winrt::TestComponentCSharp::implementation
     com_array<hstring> Class::UnboxStringArray(WF::IInspectable const& obj)
     {
         return obj.as<IReferenceArray<hstring>>().Value();
+    }
+
+    int32_t Class::GetPropertyType(IInspectable const& obj)
+    {
+        if (auto ipv = obj.try_as<IPropertyValue>())
+        {
+            return static_cast<int32_t>(ipv.Type());
+        }
+        return -1;
+    }
+
+    hstring Class::GetName(IInspectable const& obj)
+    {
+        return get_class_name(obj);
     }
 
     TypeName Class::Int32Type()
