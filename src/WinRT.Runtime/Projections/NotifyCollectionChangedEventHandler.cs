@@ -12,7 +12,7 @@ namespace ABI.System.Collections.Specialized
 {
 
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    [Guid("8B0909DC-2005-5D93-BF8A-725F017BAA8D")]
+    [Guid("CA10B37C-F382-4591-8557-5E24965279B0")]
 #if EMBED
     internal
 #else
@@ -45,7 +45,7 @@ namespace ABI.System.Collections.Specialized
 
         public static global::System.Delegate AbiInvokeDelegate { get; }
 
-        private static readonly Guid IID = new(0x8B0909DC, 0x2005, 0x5D93, 0xBF, 0x8A, 0x72, 0x5F, 0x01, 0x7B, 0xAA, 0x8D);
+        private static readonly Guid IID = new(0xCA10B37C, 0xF382, 0x4591, 0x85, 0x57, 0x5E, 0x24, 0x96, 0x52, 0x79, 0xB0);
 
         public static unsafe IObjectReference CreateMarshaler(global::System.Collections.Specialized.NotifyCollectionChangedEventHandler managedDelegate) =>
             managedDelegate is null ? null : MarshalDelegate.CreateMarshaler(managedDelegate, IID);

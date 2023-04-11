@@ -9,7 +9,7 @@ using WinRT.Interop;
 
 namespace ABI.Windows.UI.Xaml.Data
 {
-    [Guid("4CF68D33-E3F2-4964-B85E-945B4F7E2F21")]
+    [Guid("4F33A9A0-5CF4-47A4-B16F-D7FAAF17457E")]
     [StructLayout(LayoutKind.Sequential)]
     internal unsafe struct IPropertyChangedEventArgsVftbl
     {
@@ -20,10 +20,10 @@ namespace ABI.Windows.UI.Xaml.Data
 
 
     [global::WinRT.ObjectReferenceWrapper(nameof(_obj))]
-    [Guid("B30C3E3A-DF8D-44A5-9A38-7AC0D08CE63D")]
+    [Guid("6DCC9C03-E0C7-4EEE-8EA9-37E3406EEB1C")]
     internal sealed unsafe class WinRTPropertyChangedEventArgsRuntimeClassFactory
     {
-        [Guid("B30C3E3A-DF8D-44A5-9A38-7AC0D08CE63D")]
+        [Guid("6DCC9C03-E0C7-4EEE-8EA9-37E3406EEB1C")]
         [StructLayout(LayoutKind.Sequential)]
         public struct Vftbl
         {

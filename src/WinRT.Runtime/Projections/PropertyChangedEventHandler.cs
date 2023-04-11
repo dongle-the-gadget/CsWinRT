@@ -11,7 +11,7 @@ using WinRT.Interop;
 namespace ABI.System.ComponentModel
 {
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    [Guid("E3DE52F6-1E32-5DA6-BB2D-B5B6096C962D")]
+    [Guid("50F19C16-0A22-4D8E-A089-1EA9951657D2")]
 #if EMBED
     internal
 #else
@@ -44,7 +44,7 @@ namespace ABI.System.ComponentModel
 
         public static global::System.Delegate AbiInvokeDelegate { get; }
 
-        private static readonly Guid IID = new(0xE3DE52F6, 0x1E32, 0x5DA6, 0xBB, 0x2D, 0xB5, 0xB6, 0x09, 0x6C, 0x96, 0x2D);
+        private static readonly Guid IID = new(0x50F19C16, 0x0A22, 0x4D8E, 0xA0, 0x89, 0x1E, 0xA9, 0x95, 0x16, 0x57, 0xD2);
 
         public static unsafe IObjectReference CreateMarshaler(global::System.ComponentModel.PropertyChangedEventHandler managedDelegate) =>
             managedDelegate is null ? null : MarshalDelegate.CreateMarshaler(managedDelegate, IID);
