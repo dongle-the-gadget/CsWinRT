@@ -61,6 +61,14 @@ namespace Generator
             return assemblyVersion;
         }
 
+        public static string GetXamlNamespace(this GeneratorExecutionContext context)
+        {
+            context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.XamlNamespace", out var xamlNamespace);
+            if (string.IsNullOrEmpty(xamlNamespace))
+                return "Microsoft.UI.Xaml";
+            return xamlNamespace;
+        }
+
         public static string GetGeneratedFilesDir(this GeneratorExecutionContext context)
         {
             context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.CsWinRTGeneratedFilesDir", out var generatedFilesDir);

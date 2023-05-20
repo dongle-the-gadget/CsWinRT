@@ -157,6 +157,42 @@ namespace WinRT
             }
         }
 
+        private static void ReregisterCustomAbiTypeMappingNoLock(
+            Type publicType,
+#if NET
+            [DynamicallyAccessedMembers(
+                DynamicallyAccessedMemberTypes.PublicMethods |
+                DynamicallyAccessedMemberTypes.NonPublicMethods |
+                DynamicallyAccessedMemberTypes.PublicNestedTypes |
+                DynamicallyAccessedMemberTypes.PublicFields)]
+#endif
+            Type newAbiType,
+#if NET
+            [DynamicallyAccessedMembers(
+                DynamicallyAccessedMemberTypes.PublicMethods |
+                DynamicallyAccessedMemberTypes.NonPublicMethods |
+                DynamicallyAccessedMemberTypes.PublicNestedTypes |
+                DynamicallyAccessedMemberTypes.PublicFields)]
+#endif
+            Type oldAbiType,
+            string newWinRTTypeName,
+            string oldWinRTTypeName,
+            bool isRuntimeClass = false)
+        {
+            CustomTypeToHelperTypeMappings[publicType] = newAbiType;
+            CustomAbiTypeToTypeMappings.Add(newAbiType, publicType);
+            CustomAbiTypeToTypeMappings.Remove(oldAbiType);
+
+            CustomTypeToAbiTypeNameMappings[publicType] = newWinRTTypeName;
+            CustomAbiTypeNameToTypeMappings.Add(newWinRTTypeName, publicType);
+            CustomAbiTypeNameToTypeMappings.Remove(oldWinRTTypeName);
+            if (isRuntimeClass)
+            {
+                ProjectedRuntimeClassNames.Add(newWinRTTypeName);
+                ProjectedRuntimeClassNames.Remove(oldWinRTTypeName);
+            }
+        }
+
         private static void RegisterCustomAbiTypeMappingNoLock(
             Type publicType,
 #if NET

@@ -146,11 +146,13 @@ namespace Generator
             {
                 string assembly = context.GetAssemblyName();
                 string version = context.GetAssemblyVersion();
+                string xamlNamespace = context.GetXamlNamespace();
                 MetadataBuilder metadataBuilder = new MetadataBuilder();
 
                 var writer = new WinRTTypeWriter(
                     assembly,
                     version,
+                    xamlNamespace,
                     metadataBuilder,
                     Logger);
 
