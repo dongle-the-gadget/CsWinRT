@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using ABI.System;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using WinRT;
 using WinRT.Interop;
 
-namespace ABI.System.Windows.Input
+namespace WinRT.Xaml.Input
 {
     [global::WinRT.ObjectReferenceWrapper(nameof(_obj)), EditorBrowsable(EditorBrowsableState.Never)]
     [Guid("E5AF3542-CA67-4081-995B-709DD13792DF")]
@@ -104,7 +104,7 @@ namespace ABI.System.Windows.Input
                 try
                 {
                     var __this = global::WinRT.ComWrappersSupport.FindObject<global::System.Windows.Input.ICommand>(thisPtr);
-                    var __handler = EventHandler.FromAbi(handler);
+                    var __handler = ABI.System.EventHandler.FromAbi(handler);
                     *token = _CanExecuteChanged_TokenTables.GetOrCreateValue(__this).AddEventHandler(__handler);
                     __this.CanExecuteChanged += __handler;
                     return 0;

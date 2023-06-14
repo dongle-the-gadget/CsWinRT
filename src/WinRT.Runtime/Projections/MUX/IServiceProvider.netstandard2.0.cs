@@ -5,7 +5,7 @@ using System;
 using System.Runtime.InteropServices;
 using WinRT;
 
-namespace ABI.System
+namespace ABI.System.MUX
 {
     [global::WinRT.ObjectReferenceWrapper(nameof(_obj)), global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     [Guid("68B3A2DF-8173-539F-B524-C8A2348F5AFB")]
