@@ -328,6 +328,7 @@ namespace Generator
 
         private readonly string assembly;
         private readonly string version;
+        private readonly string xamlNamespace;
 
         private readonly Dictionary<string, TypeReferenceHandle> typeReferenceMapping;
         private readonly Dictionary<string, EntityHandle> assemblyReferenceMapping;
@@ -349,6 +350,7 @@ namespace Generator
             this.assembly = assembly;
             this.version = version;
             this.metadataBuilder = metadataBuilder;
+            this.xamlNamespace = xamlNamespace;
             Logger = logger;
             typeReferenceMapping = new Dictionary<string, TypeReferenceHandle>(StringComparer.Ordinal);
             assemblyReferenceMapping = new Dictionary<string, EntityHandle>(StringComparer.Ordinal);
@@ -358,6 +360,8 @@ namespace Generator
             if (xamlNamespace == "Microsoft.UI.Xaml")
             {
                 mappedCSharpTypes.Add("System.IServiceProvider", new MappedType("Microsoft.UI.Xaml", "IXamlServiceProvider", "Microsoft.UI"));
+                mappedCSharpTypes.Add("System.ComponentModel.DataErrorsChangedEventArgs", new MappedType("Microsoft.UI.Xaml.Data", "DataErrorsChangedEventArgs", "Microsoft.UI"));
+                mappedCSharpTypes.Add("System.ComponentModel.INotifyDataErrorInfo", new MappedType("Microsoft.UI.Xaml.Data", "INotifyDataErrorInfo", "Microsoft.UI"));
                 mappedCSharpTypes.Add("System.ComponentModel.INotifyPropertyChanged", new MappedType("Microsoft.UI.Xaml.Data", "INotifyPropertyChanged", "Microsoft.UI"));
                 mappedCSharpTypes.Add("System.ComponentModel.PropertyChangedEventArgs", new MappedType("Microsoft.UI.Xaml.Data", "PropertyChangedEventArgs", "Microsoft.UI"));
                 mappedCSharpTypes.Add("System.ComponentModel.PropertyChangedEventHandler", new MappedType("Microsoft.UI.Xaml.Data", "PropertyChangedEventHandler", "Microsoft.UI"));
@@ -1232,6 +1236,18 @@ namespace Generator
                     GetType("System.Object")
                 );
             }
+            else if (string.CompareOrdinal(mappedTypeName, "INotifyDataErrorInfo") == 0)
+            {
+                AddProperty("HasErrors", GetType("System.Boolean"), false);
+                AddEvent(
+                    "ErrorsChanged",
+                    GetType("System.EventHandler`1", true, -1, false, new[] { GetType("System.ComponentModel.DataErrorsChangedEventArgs").Type }));
+                AddMethod(
+                    "GetErrors",
+                    new[] { new Parameter(GetType("System.String"), "propertyName", ParameterAttributes.In) },
+                    GetType("System.Collections.Generic.IEnumerable`1", true, -1, false, new[] { GetType("System.Object").Type })
+                );
+            }
             else if (string.CompareOrdinal(mappedTypeName, "INotifyPropertyChanged") == 0)
             {
                 AddEvent("PropertyChanged", GetType("System.ComponentModel.PropertyChangedEventHandler"));
@@ -1254,7 +1270,7 @@ namespace Generator
             }
             else if (string.CompareOrdinal(mappedTypeName, "IBindableIterable") == 0)
             {
-                AddMethod("First", null, GetType("Windows.UI.Xaml.Interop.IBindableIterator"));
+                AddMethod("First", null, GetType($"{xamlNamespace}.Interop.IBindableIterator"));
             }
             else if (string.CompareOrdinal(mappedTypeName, "IBindableVector") == 0)
             {
@@ -1269,7 +1285,7 @@ namespace Generator
                     new[] { new Parameter(GetType("System.UInt32"), "index", ParameterAttributes.In) },
                     GetType("System.Object")
                 );
-                AddMethod("GetView", null, GetType("Windows.UI.Xaml.Interop.IBindableVectorView"));
+                AddMethod("GetView", null, GetType($"{xamlNamespace}.Interop.IBindableVectorView"));
                 AddMethod(
                     "IndexOf",
                     new[] {
