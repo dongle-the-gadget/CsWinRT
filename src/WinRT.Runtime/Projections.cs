@@ -175,13 +175,13 @@ namespace WinRT
         {
             var oldAbiType = CustomTypeToHelperTypeMappings[publicType];
             CustomTypeToHelperTypeMappings[publicType] = newAbiType;
-            CustomAbiTypeToTypeMappings.Add(newAbiType, publicType);
             CustomAbiTypeToTypeMappings.Remove(oldAbiType);
+            CustomAbiTypeToTypeMappings.Add(newAbiType, publicType);
 
             var oldWinRTTypeName = CustomTypeToAbiTypeNameMappings[publicType];
             CustomTypeToAbiTypeNameMappings[publicType] = newWinRTTypeName;
-            CustomAbiTypeNameToTypeMappings.Add(newWinRTTypeName, publicType);
             CustomAbiTypeNameToTypeMappings.Remove(oldWinRTTypeName);
+            CustomAbiTypeNameToTypeMappings.Add(newWinRTTypeName, publicType);
             if (isRuntimeClass)
             {
                 ProjectedRuntimeClassNames.Add(newWinRTTypeName);
