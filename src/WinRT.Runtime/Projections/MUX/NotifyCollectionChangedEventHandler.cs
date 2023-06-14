@@ -8,16 +8,17 @@ using System.Runtime.InteropServices;
 using WinRT;
 using WinRT.Interop;
 
-namespace ABI.System.ComponentModel
+namespace ABI.System.Collections.Specialized.MUX
 {
+
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    [Guid("50F19C16-0A22-4D8E-A089-1EA9951657D2")]
+    [Guid("8B0909DC-2005-5D93-BF8A-725F017BAA8D")]
 #if EMBED
     internal
 #else
     public
 #endif
-    static class PropertyChangedEventHandler
+    static class NotifyCollectionChangedEventHandler
     {
 #if !NET
         private unsafe delegate int Abi_Invoke(IntPtr thisPtr, IntPtr sender, IntPtr e);
@@ -26,7 +27,7 @@ namespace ABI.System.ComponentModel
         private static readonly global::WinRT.Interop.IDelegateVftbl AbiToProjectionVftable;
         public static readonly IntPtr AbiToProjectionVftablePtr;
 
-        static unsafe PropertyChangedEventHandler()
+        static unsafe NotifyCollectionChangedEventHandler()
         {
             AbiToProjectionVftable = new global::WinRT.Interop.IDelegateVftbl
             {
@@ -37,31 +38,31 @@ namespace ABI.System.ComponentModel
                 Invoke = (IntPtr)(delegate* unmanaged[Stdcall]<IntPtr, IntPtr, IntPtr, int>)&Do_Abi_Invoke
 #endif
             };
-            var nativeVftbl = ComWrappersSupport.AllocateVtableMemory(typeof(PropertyChangedEventHandler), Marshal.SizeOf<global::WinRT.Interop.IDelegateVftbl>());
+            var nativeVftbl = ComWrappersSupport.AllocateVtableMemory(typeof(NotifyCollectionChangedEventHandler), Marshal.SizeOf<global::WinRT.Interop.IDelegateVftbl>());
             Marshal.StructureToPtr(AbiToProjectionVftable, nativeVftbl, false);
             AbiToProjectionVftablePtr = nativeVftbl;
         }
 
         public static global::System.Delegate AbiInvokeDelegate { get; }
 
-        private static readonly Guid IID = new(0x50F19C16, 0x0A22, 0x4D8E, 0xA0, 0x89, 0x1E, 0xA9, 0x95, 0x16, 0x57, 0xD2);
+        private static readonly Guid IID = new(0x8B0909DC, 0x2005, 0x5D93, 0xBF, 0x8A, 0x72, 0x5F, 0x01, 0x7B, 0xAA, 0x8D);
 
-        public static unsafe IObjectReference CreateMarshaler(global::System.ComponentModel.PropertyChangedEventHandler managedDelegate) =>
+        public static unsafe IObjectReference CreateMarshaler(global::System.Collections.Specialized.NotifyCollectionChangedEventHandler managedDelegate) =>
             managedDelegate is null ? null : MarshalDelegate.CreateMarshaler(managedDelegate, IID);
 
-        public static unsafe ObjectReferenceValue CreateMarshaler2(global::System.ComponentModel.PropertyChangedEventHandler managedDelegate) => 
+        public static unsafe ObjectReferenceValue CreateMarshaler2(global::System.Collections.Specialized.NotifyCollectionChangedEventHandler managedDelegate) => 
             MarshalDelegate.CreateMarshaler2(managedDelegate, IID);
 
-        public static IntPtr GetAbi(IObjectReference value) => MarshalInterfaceHelper<global::System.ComponentModel.PropertyChangedEventHandler>.GetAbi(value);
+        public static IntPtr GetAbi(IObjectReference value) => MarshalInterfaceHelper<global::System.Collections.Specialized.NotifyCollectionChangedEventHandler>.GetAbi(value);
 
-        public static unsafe global::System.ComponentModel.PropertyChangedEventHandler FromAbi(IntPtr nativeDelegate)
+        public static unsafe global::System.Collections.Specialized.NotifyCollectionChangedEventHandler FromAbi(IntPtr nativeDelegate)
         {
-            return MarshalDelegate.FromAbi<global::System.ComponentModel.PropertyChangedEventHandler>(nativeDelegate);
+            return MarshalDelegate.FromAbi<global::System.Collections.Specialized.NotifyCollectionChangedEventHandler>(nativeDelegate);
         }
 
-        public static global::System.ComponentModel.PropertyChangedEventHandler CreateRcw(IntPtr ptr)
+        public static global::System.Collections.Specialized.NotifyCollectionChangedEventHandler CreateRcw(IntPtr ptr)
         {
-            return new global::System.ComponentModel.PropertyChangedEventHandler(new NativeDelegateWrapper(ComWrappersSupport.GetObjectReferenceForInterface<IDelegateVftbl>(ptr, IID)).Invoke);
+            return new global::System.Collections.Specialized.NotifyCollectionChangedEventHandler(new NativeDelegateWrapper(ComWrappersSupport.GetObjectReferenceForInterface<IDelegateVftbl>(ptr, IID)).Invoke);
         }
 
         [global::WinRT.ObjectReferenceWrapper(nameof(_nativeDelegate))]
@@ -98,7 +99,7 @@ namespace ABI.System.ComponentModel
             ConcurrentDictionary<RuntimeTypeHandle, object> IWinRTObject.AdditionalTypeData => _additionalTypeData ?? MakeAdditionalTypeData();
 #endif
 
-            public unsafe void Invoke(object sender, global::System.ComponentModel.PropertyChangedEventArgs e)
+            public unsafe void Invoke(object sender, global::System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
             {
                 IntPtr ThisPtr = _nativeDelegate.ThisPtr;
 #if !NET
@@ -111,7 +112,7 @@ namespace ABI.System.ComponentModel
                 try
                 {
                     __sender = MarshalInspectable<object>.CreateMarshaler2(sender);
-                    __e = global::ABI.System.ComponentModel.PropertyChangedEventArgs.CreateMarshaler2(e);
+                    __e = global::ABI.System.Collections.Specialized.MUX.NotifyCollectionChangedEventArgs.CreateMarshaler2(e);
                     global::WinRT.ExceptionHelpers.ThrowExceptionForHR(abiInvoke(ThisPtr, MarshalInspectable<object>.GetAbi(__sender), MarshalInspectable<object>.GetAbi(__e)));
                 }
                 finally
@@ -119,15 +120,16 @@ namespace ABI.System.ComponentModel
                     MarshalInspectable<object>.DisposeMarshaler(__sender);
                     MarshalInspectable<object>.DisposeMarshaler(__e);
                 }
+
             }
         }
 
-        public static IntPtr FromManaged(global::System.ComponentModel.PropertyChangedEventHandler managedDelegate) => 
+        public static IntPtr FromManaged(global::System.Collections.Specialized.NotifyCollectionChangedEventHandler managedDelegate) => 
             CreateMarshaler2(managedDelegate).Detach();
 
-        public static void DisposeMarshaler(IObjectReference value) => MarshalInterfaceHelper<global::System.ComponentModel.PropertyChangedEventHandler>.DisposeMarshaler(value);
+        public static void DisposeMarshaler(IObjectReference value) => MarshalInterfaceHelper<global::System.Collections.Specialized.NotifyCollectionChangedEventHandler>.DisposeMarshaler(value);
 
-        public static void DisposeAbi(IntPtr abi) => MarshalInterfaceHelper<global::System.ComponentModel.PropertyChangedEventHandler>.DisposeAbi(abi);
+        public static void DisposeAbi(IntPtr abi) => MarshalInterfaceHelper<global::System.Collections.Specialized.NotifyCollectionChangedEventHandler>.DisposeAbi(abi);
 
 #if NET
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
@@ -137,12 +139,12 @@ namespace ABI.System.ComponentModel
             try
             {
 #if NET
-                var invoke = ComWrappersSupport.FindObject<global::System.ComponentModel.PropertyChangedEventHandler>(thisPtr);
-                invoke.Invoke(MarshalInspectable<object>.FromAbi(sender), global::ABI.System.ComponentModel.PropertyChangedEventArgs.FromAbi(e));
+                var invoke = ComWrappersSupport.FindObject<global::System.Collections.Specialized.NotifyCollectionChangedEventHandler>(thisPtr);
+                invoke.Invoke(MarshalInspectable<object>.FromAbi(sender), global::ABI.System.Collections.Specialized.MUX.NotifyCollectionChangedEventArgs.FromAbi(e));
 #else
-                global::WinRT.ComWrappersSupport.MarshalDelegateInvoke(thisPtr, (global::System.ComponentModel.PropertyChangedEventHandler invoke) =>
+                global::WinRT.ComWrappersSupport.MarshalDelegateInvoke(thisPtr, (global::System.Collections.Specialized.NotifyCollectionChangedEventHandler invoke) =>
                 {
-                    invoke(MarshalInspectable<object>.FromAbi(sender), global::ABI.System.ComponentModel.PropertyChangedEventArgs.FromAbi(e));
+                    invoke(MarshalInspectable<object>.FromAbi(sender), global::ABI.System.Collections.Specialized.MUX.NotifyCollectionChangedEventArgs.FromAbi(e));
                 });
 #endif
             }
@@ -155,17 +157,17 @@ namespace ABI.System.ComponentModel
         }
     }
 
-    internal sealed unsafe class PropertyChangedEventSource : EventSource<global::System.ComponentModel.PropertyChangedEventHandler>
+    internal sealed unsafe class NotifyCollectionChangedEventSource : EventSource<global::System.Collections.Specialized.NotifyCollectionChangedEventHandler>
     {
-        internal PropertyChangedEventSource(IObjectReference obj,
+        internal NotifyCollectionChangedEventSource(IObjectReference obj,
             delegate* unmanaged[Stdcall]<global::System.IntPtr, global::System.IntPtr, out global::WinRT.EventRegistrationToken, int> addHandler,
             delegate* unmanaged[Stdcall]<global::System.IntPtr, global::WinRT.EventRegistrationToken, int> removeHandler)
             : base(obj, addHandler, removeHandler)
         {
         }
 
-        protected override ObjectReferenceValue CreateMarshaler(global::System.ComponentModel.PropertyChangedEventHandler del) =>
-            PropertyChangedEventHandler.CreateMarshaler2(del);
+        protected override ObjectReferenceValue CreateMarshaler(global::System.Collections.Specialized.NotifyCollectionChangedEventHandler del) =>
+            NotifyCollectionChangedEventHandler.CreateMarshaler2(del);
 
         protected override State CreateEventState() =>
             new EventState(_obj.ThisPtr, _index);
@@ -179,10 +181,10 @@ namespace ABI.System.ComponentModel
 
             protected override Delegate GetEventInvoke()
             {
-                global::System.ComponentModel.PropertyChangedEventHandler handler =
-                    (global::System.Object obj, global::System.ComponentModel.PropertyChangedEventArgs e) =>
+                global::System.Collections.Specialized.NotifyCollectionChangedEventHandler handler =
+                    (global::System.Object obj, global::System.Collections.Specialized.NotifyCollectionChangedEventArgs e) =>
                     {
-                        var localDel = (global::System.ComponentModel.PropertyChangedEventHandler) del;
+                        var localDel = (global::System.Collections.Specialized.NotifyCollectionChangedEventHandler) del;
                         if (localDel != null)
                             localDel.Invoke(obj, e);
                     };

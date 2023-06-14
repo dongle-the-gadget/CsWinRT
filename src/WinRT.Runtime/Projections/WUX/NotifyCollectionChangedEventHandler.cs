@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using WinRT;
 using WinRT.Interop;
 
-namespace ABI.System.Collections.Specialized
+namespace ABI.System.Collections.Specialized.WUX
 {
 
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
@@ -112,7 +112,7 @@ namespace ABI.System.Collections.Specialized
                 try
                 {
                     __sender = MarshalInspectable<object>.CreateMarshaler2(sender);
-                    __e = global::ABI.System.Collections.Specialized.NotifyCollectionChangedEventArgs.CreateMarshaler2(e);
+                    __e = global::ABI.System.Collections.Specialized.WUX.NotifyCollectionChangedEventArgs.CreateMarshaler2(e);
                     global::WinRT.ExceptionHelpers.ThrowExceptionForHR(abiInvoke(ThisPtr, MarshalInspectable<object>.GetAbi(__sender), MarshalInspectable<object>.GetAbi(__e)));
                 }
                 finally
@@ -140,11 +140,11 @@ namespace ABI.System.Collections.Specialized
             {
 #if NET
                 var invoke = ComWrappersSupport.FindObject<global::System.Collections.Specialized.NotifyCollectionChangedEventHandler>(thisPtr);
-                invoke.Invoke(MarshalInspectable<object>.FromAbi(sender), global::ABI.System.Collections.Specialized.NotifyCollectionChangedEventArgs.FromAbi(e));
+                invoke.Invoke(MarshalInspectable<object>.FromAbi(sender), global::ABI.System.Collections.Specialized.WUX.NotifyCollectionChangedEventArgs.FromAbi(e));
 #else
                 global::WinRT.ComWrappersSupport.MarshalDelegateInvoke(thisPtr, (global::System.Collections.Specialized.NotifyCollectionChangedEventHandler invoke) =>
                 {
-                    invoke(MarshalInspectable<object>.FromAbi(sender), global::ABI.System.Collections.Specialized.NotifyCollectionChangedEventArgs.FromAbi(e));
+                    invoke(MarshalInspectable<object>.FromAbi(sender), global::ABI.System.Collections.Specialized.WUX.NotifyCollectionChangedEventArgs.FromAbi(e));
                 });
 #endif
             }

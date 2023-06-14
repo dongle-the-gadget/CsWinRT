@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-namespace ABI.System.Collections.Specialized
+namespace ABI.System.Collections.Specialized.WUX
 {
     static class NotifyCollectionChangedAction
     {

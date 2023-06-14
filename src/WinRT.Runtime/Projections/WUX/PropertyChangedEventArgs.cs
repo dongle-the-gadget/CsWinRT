@@ -91,7 +91,7 @@ namespace ABI.Windows.UI.Xaml.Data
     }
 }
 
-namespace ABI.System.ComponentModel
+namespace ABI.System.ComponentModel.WUX
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
     [StructLayout(LayoutKind.Sequential)]

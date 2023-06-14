@@ -184,7 +184,7 @@ namespace ABI.Windows.UI.Xaml.Interop
     }
 }
 
-namespace ABI.System.Collections.Specialized
+namespace ABI.System.Collections.Specialized.WUX
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
     [StructLayout(LayoutKind.Sequential)]

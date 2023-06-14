@@ -98,7 +98,7 @@ namespace WinRT
             CustomTypeToHelperTypeMappings.Add(typeof(IVector<>), typeof(ABI.System.Collections.Generic.IList<>));
             CustomTypeToHelperTypeMappings.Add(typeof(IMapView<,>), typeof(ABI.System.Collections.Generic.IReadOnlyDictionary<,>));
             CustomTypeToHelperTypeMappings.Add(typeof(IVectorView<>), typeof(ABI.System.Collections.Generic.IReadOnlyList<>));
-            CustomTypeToHelperTypeMappings.Add(typeof(Windows.UI.Xaml.Interop.IBindableVector), typeof(ABI.System.Collections.IList));
+            CustomTypeToHelperTypeMappings.Add(typeof(WinRT.Xaml.Interop.IBindableVector), typeof(ABI.System.Collections.IList));
 
 #if NET
             CustomTypeToHelperTypeMappings.Add(typeof(ICollection<>), typeof(ABI.System.Collections.Generic.ICollection<>));
@@ -158,7 +158,7 @@ namespace WinRT
             }
         }
 
-        private static void ReregisterCustomAbiTypeMappingNoLock(
+        internal static void ReregisterCustomAbiTypeMappingNoLock(
             Type publicType,
 #if NET
             [DynamicallyAccessedMembers(

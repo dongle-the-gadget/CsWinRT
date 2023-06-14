@@ -7,10 +7,10 @@ using System.Runtime.InteropServices;
 using WinRT;
 using WinRT.Interop;
 
-namespace ABI.System.Collections.Specialized
+namespace ABI.System.Collections.Specialized.MUX
 {
     [global::WinRT.ObjectReferenceWrapper(nameof(_obj)), EditorBrowsable(EditorBrowsableState.Never)]
-    [Guid("CF75D69C-F2F4-486B-B302-BB4C09BAEBFA")]
+    [Guid("530155E1-28A5-5693-87CE-30724D95A06D")]
 #if EMBED
     internal
 #else
@@ -18,7 +18,7 @@ namespace ABI.System.Collections.Specialized
 #endif
     unsafe class INotifyCollectionChanged : global::System.Collections.Specialized.INotifyCollectionChanged
     {
-        [Guid("CF75D69C-F2F4-486B-B302-BB4C09BAEBFA")]
+        [Guid("530155E1-28A5-5693-87CE-30724D95A06D")]
         public struct Vftbl
         {
             internal IInspectable.Vftbl IInspectableVftbl;
@@ -70,7 +70,7 @@ namespace ABI.System.Collections.Specialized
                 try
                 {
                     var __this = global::WinRT.ComWrappersSupport.FindObject<global::System.Collections.Specialized.INotifyCollectionChanged>(thisPtr);
-                    var __handler = global::ABI.System.Collections.Specialized.NotifyCollectionChangedEventHandler.FromAbi(handler);
+                    var __handler = global::ABI.System.Collections.Specialized.MUX.NotifyCollectionChangedEventHandler.FromAbi(handler);
                     *token = _CollectionChanged_TokenTables.GetOrCreateValue(__this).AddEventHandler(__handler);
                     __this.CollectionChanged += __handler;
                     return 0;
