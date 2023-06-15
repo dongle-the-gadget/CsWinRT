@@ -176,7 +176,7 @@ namespace WinRT
             var oldAbiType = CustomTypeToHelperTypeMappings[publicType];
             CustomTypeToHelperTypeMappings[publicType] = newAbiType;
             CustomAbiTypeToTypeMappings.Remove(oldAbiType);
-            CustomAbiTypeToTypeMappings.Add(newAbiType, publicType);
+            CustomAbiTypeToTypeMappings[newAbiType] = publicType;
 
             var oldWinRTTypeName = CustomTypeToAbiTypeNameMappings[publicType];
             CustomTypeToAbiTypeNameMappings[publicType] = newWinRTTypeName;
