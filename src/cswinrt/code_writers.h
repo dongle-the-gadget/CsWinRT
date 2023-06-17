@@ -2771,6 +2771,26 @@ set => %.Indexer_Set(%, index, value);
             visibility, self, target);
     }
 
+     void write_notify_data_error_info_members(writer& w, std::string_view target, bool emit_explicit)
+    {
+        auto self = emit_explicit ? "global::System.ComponentModel.INotifyDataErrorInfo." : "";
+        auto visibility = emit_explicit ? "" : "public ";
+
+        w.write(R"(
+%global::System.Collections.IEnumerable %GetErrors(string propertyName) => %.GetErrors(propertyName);
+
+%event global::System.EventHandler<global::System.ComponentModel.DataErrorsChangedEventArgs> %ErrorsChanged
+{
+add => %.ErrorsChanged += value;
+remove => %.ErrorsChanged -= value;
+}
+%bool %HasErrors {get => %.HasErrors; }
+)", 
+    visibility, self, target,
+    visibility, self, target, target,
+    visibility, self, target);
+    }
+
     void write_custom_mapped_type_members(writer& w, std::string_view target, mapped_type const& mapping, bool is_private, bool call_static_abi_methods, std::string objref_name)
     {
         if (mapping.abi_name == "IIterable`1") 
@@ -2844,6 +2864,10 @@ set => %.Indexer_Set(%, index, value);
         else if (mapping.mapped_namespace == "System" && mapping.mapped_name == "IDisposable")
         {
             write_idisposable_members(w, target, is_private);
+        }
+        else if (mapping.mapped_namespace == "System.ComponentModel" && mapping.mapped_name == "INotifyDataErrorInfo")
+        {
+            write_notify_data_error_info_members(w, target, is_private);
         }
     }
 

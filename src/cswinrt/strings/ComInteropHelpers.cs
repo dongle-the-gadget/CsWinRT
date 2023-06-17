@@ -53,6 +53,39 @@ using WinRT.Interop;
 
 namespace WinRT.Interop
 {
+    internal static class IWindowNativeMethods
+    {
+        internal static readonly Guid IWindowNativeIID = new(0xEECDBF0E, 0xBAE9, 0x4CB6, 0xA6, 0x8E, 0x95, 0x98, 0xE1, 0xCB, 0x57, 0xBB);
+
+        public static unsafe global::System.IntPtr get_WindowHandle(object _obj)
+        {
+            var asObjRef = global::WinRT.MarshalInspectable<object>.CreateMarshaler2(_obj, IWindowNativeIID);
+            var ThisPtr = asObjRef.GetAbi();
+            global::System.IntPtr __retval = default;
+
+            try
+            {
+                // We use 3 here because IWindowNative only implements IUnknown, whose only functions are AddRef, Release and QI
+                global::WinRT.ExceptionHelpers.ThrowExceptionForHR((*(delegate* unmanaged[Stdcall]<IntPtr, out IntPtr, int>**)ThisPtr)[3](ThisPtr, out __retval));
+                return __retval;
+            }
+            finally
+            {
+                asObjRef.Dispose();
+            }
+        }
+    }
+
+#if EMBED
+    internal
+#else
+    public
+#endif
+    static class WindowNative
+    {
+        public static IntPtr GetWindowHandle(object target) => IWindowNativeMethods.get_WindowHandle(target);
+    }
+    
     internal static class IInitializeWithWindowMethods
     {
         internal static readonly Guid IInitializeWithWindowIID = new(0x3E68D4BD, 0x7135, 0x4D10, 0x80, 0x18, 0x9F, 0xB6, 0xD9, 0xF3, 0x3F, 0xA1);
