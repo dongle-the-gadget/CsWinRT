@@ -36,6 +36,18 @@
     <Filter Include="strings\additions\Windows.Storage">
       <UniqueIdentifier>{d939d5a3-d5f9-4802-a8f8-3c5ce8b3a07e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="strings\additions\Microsoft.UI.Xaml.Media">
+      <UniqueIdentifier>{3ea95e3a-bcc7-47b5-b407-e98b7719a412}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="strings\additions\Microsoft.UI.Xaml.Media.Animation">
+      <UniqueIdentifier>{68a3217a-a855-4c41-b960-b824936f9d65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="strings\additions\Microsoft.UI.Xaml.Media.Media3D">
+      <UniqueIdentifier>{9bf05999-e08c-4350-8578-fb323339881d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="strings\additions\Microsoft.UI.Xaml.Controls.Primitives">
+      <UniqueIdentifier>{e483cc4d-5542-476b-b7d4-93a864573f63}</UniqueIdentifier>
+    </Filter>
     <Filter Include="strings\additions\Windows.UI">
       <UniqueIdentifier>{8e05f8fe-6311-4726-998b-5cbe19398698}</UniqueIdentifier>
     </Filter>
@@ -149,6 +161,21 @@
     </None>
     <None Include="strings\additions\Windows.Foundation\Windows.Foundation.SR.cs">
       <Filter>strings\additions\Windows.Foundation</Filter>
+    </None>
+    <None Include="strings\additions\Microsoft.UI.Xaml.Media.Media3D\Microsoft.UI.Xaml.Media.Media3D.cs">
+      <Filter>strings\additions\Microsoft.UI.Xaml.Media.Media3D</Filter>
+    </None>
+    <None Include="strings\additions\Microsoft.UI.Xaml.Media.Animation\Microsoft.UI.Xaml.Media.Animation.cs">
+      <Filter>strings\additions\Microsoft.UI.Xaml.Media.Animation</Filter>
+    </None>
+    <None Include="strings\additions\Microsoft.UI.Xaml.Media\Microsoft.UI.Xaml.Media.cs">
+      <Filter>strings\additions\Microsoft.UI.Xaml.Media</Filter>
+    </None>
+    <None Include="strings\additions\Microsoft.UI.Xaml.Controls.Primitives\Microsoft.UI.Xaml.Controls.Primitives.cs">
+      <Filter>strings\additions\Microsoft.UI.Xaml.Controls.Primitives</Filter>
+    </None>
+    <None Include="strings\additions\Microsoft.UI.Xaml\Microsoft.UI.Xaml.SR.cs">
+      <Filter>strings\additions\Microsoft.UI.Xaml</Filter>
     </None>
     <None Include="strings\additions\Windows.UI\Windows.UI.cs">
       <Filter>strings\additions\Windows.UI</Filter>

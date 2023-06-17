@@ -85,7 +85,7 @@ namespace WinRT.Interop
     {
         public static IntPtr GetWindowHandle(object target) => IWindowNativeMethods.get_WindowHandle(target);
     }
-    
+
     internal static class IInitializeWithWindowMethods
     {
         internal static readonly Guid IInitializeWithWindowIID = new(0x3E68D4BD, 0x7135, 0x4D10, 0x80, 0x18, 0x9F, 0xB6, 0xD9, 0xF3, 0x3F, 0xA1);
