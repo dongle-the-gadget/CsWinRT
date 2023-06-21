@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>$(LibBuildTFMs)</TargetFrameworks>
+        <Platforms>x64;x86</Platforms>
+        <AssemblyName>Microsoft.Windows.Full.SDK.NET</AssemblyName>
+	</PropertyGroup>
+
+    <PropertyGroup>
+    	<CsWinRTIncludes>Windows.UI.Colors;Windows.UI.IColors;Windows.UI.ColorHelper;Windows.UI.IColorHelper;Windows.UI.Xaml</CsWinRTIncludes>
+		<CsWinRTExcludes>Windows</CsWinRTExcludes>
+    </PropertyGroup>
+
+	<ItemGroup>
+        <ProjectReference Include="..\Windows\Windows.csproj" />
+        <ProjectReference Include="..\..\WinRT.Runtime\WinRT.Runtime.csproj" />
+        <ProjectReference Include="..\..\cswinrt\cswinrt.vcxproj" />
+        <InternalsVisibleTo Include="UnitTest" />
+    </ItemGroup>
+
+	<Target Name="RemoveWindowsUIColor" DependsOnTargets="CsWinRTIncludeProjection" BeforeTargets="BeforeCompile;GenerateTargetFrameworkMonikerAttribute">
+		<PropertyGroup>
+        	<FileContent>$([System.IO.File]::ReadAllText('$(CsWinRTGeneratedFilesDir)Windows.UI.cs'))</FileContent>
+        	<Index>$(FileContent.IndexOf('#pragma warning restore CA1416'))</Index>
+    	</PropertyGroup>
+    	<WriteLinesToFile Condition="'$(Index)' != '-1'" File="$(CsWinRTGeneratedFilesDir)Windows.UI.cs" Lines="$(FileContent.Substring(0, $(Index)))" Overwrite="true" />
+  	</Target>
+
+</Project>

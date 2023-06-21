@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>$(LibBuildTFMs)</TargetFrameworks>
+        <Platforms>x64;x86</Platforms>
+        <AssemblyName>Microsoft.WinUI2</AssemblyName>
+        <TargetPlatformMinVersion Condition="'$(TargetFramework)' == 'netstandard2.0'">10.0.17763.0</TargetPlatformMinVersion>
+        <TargetPlatformVersion Condition=$"'(TargetFramework)' == 'netstandard2.0'">10.0.19041.0</TargetPlatformVersion>
+	</PropertyGroup>
+
+    <PropertyGroup>
+    	<CsWinRTFilters>
+-exclude Windows
+-include Microsoft
+		</CsWinRTFilters>
+    </PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\WUX\WUX.csproj" />
+        <ProjectReference Include="..\..\WinRT.Runtime\WinRT.Runtime.csproj" />
+        <ProjectReference Include="..\..\cswinrt\cswinrt.vcxproj" />
+        <InternalsVisibleTo Include="UnitTest" />
+
+		<PackageReference Include="Microsoft.UI.Xaml" Version="2.8.4" />
+    </ItemGroup>
+
+</Project>
