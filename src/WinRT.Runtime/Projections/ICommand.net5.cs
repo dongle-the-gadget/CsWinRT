@@ -5,8 +5,9 @@ using ABI.System;
 using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using WinRT;
 
-namespace WinRT.Xaml.Input
+namespace ABI.System.Windows.Input
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Guid("E5AF3542-CA67-4081-995B-709DD13792DF")]

@@ -55,7 +55,7 @@ namespace WinRT
                 Projections.ReregisterCustomAbiTypeMappingNoLock(typeof(NotifyCollectionChangedEventHandler), typeof(ABI.System.Collections.Specialized.WUX.NotifyCollectionChangedEventHandler), "Windows.UI.Xaml.Interop.NotifyCollectionChangedEventHandler");
                 Projections.ReregisterCustomAbiTypeMappingNoLock(typeof(IEnumerable), typeof(ABI.System.Collections.IEnumerable), "Windows.UI.Xaml.Interop.IBindableIterable");
                 Projections.ReregisterCustomAbiTypeMappingNoLock(typeof(IList), typeof(ABI.System.Collections.IList), "Windows.UI.Xaml.Interop.IBindableVector");
-                Projections.ReregisterCustomAbiTypeMappingNoLock(typeof(ICommand), typeof(WinRT.Xaml.Input.ICommand), "Windows.UI.Xaml.Interop.ICommand");
+                Projections.ReregisterCustomAbiTypeMappingNoLock(typeof(ICommand), typeof(ABI.System.Windows.Input.ICommand), "Windows.UI.Xaml.Interop.ICommand");
 
                 Projections.UnregisterCustomAbiTypeMappingNoLock(typeof(DataErrorsChangedEventArgs), isRuntimeClass: true);
                 Projections.UnregisterCustomAbiTypeMappingNoLock(typeof(INotifyDataErrorInfo));
@@ -70,7 +70,7 @@ namespace WinRT
                 Projections.ReregisterCustomAbiTypeMappingNoLock(typeof(PropertyChangedEventArgs), typeof(ABI.System.ComponentModel.MUX.PropertyChangedEventArgs), "Microsoft.UI.Xaml.Data.PropertyChangedEventArgs", isRuntimeClass: true);
                 Projections.ReregisterCustomAbiTypeMappingNoLock(typeof(PropertyChangedEventHandler), typeof(ABI.System.ComponentModel.MUX.PropertyChangedEventHandler), "Microsoft.UI.Xaml.Data.PropertyChangedEventHandler");
                 Projections.ReregisterCustomAbiTypeMappingNoLock(typeof(INotifyPropertyChanged), typeof(ABI.System.ComponentModel.MUX.INotifyPropertyChanged), "Microsoft.UI.Xaml.Data.INotifyPropertyChanged");
-                Projections.ReregisterCustomAbiTypeMappingNoLock(typeof(ICommand), typeof(WinRT.Xaml.Input.ICommand), "Microsoft.UI.Xaml.Interop.ICommand");
+                Projections.ReregisterCustomAbiTypeMappingNoLock(typeof(ICommand), typeof(ABI.System.Windows.Input.ICommand), "Microsoft.UI.Xaml.Interop.ICommand");
                 Projections.ReregisterCustomAbiTypeMappingNoLock(typeof(IEnumerable), typeof(ABI.System.Collections.IEnumerable), "Microsoft.UI.Xaml.Interop.IBindableIterable");
                 Projections.ReregisterCustomAbiTypeMappingNoLock(typeof(IList), typeof(ABI.System.Collections.IList), "Microsoft.UI.Xaml.Interop.IBindableVector");
                 Projections.ReregisterCustomAbiTypeMappingNoLock(typeof(INotifyCollectionChanged), typeof(ABI.System.Collections.Specialized.MUX.INotifyCollectionChanged), "Microsoft.UI.Xaml.Interop.INotifyCollectionChanged");

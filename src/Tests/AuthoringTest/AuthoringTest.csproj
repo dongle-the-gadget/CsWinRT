@@ -7,6 +7,7 @@
     <!-- CsWinRTEnableLogging helps to diagnose generation issues -->
     <!-- <CsWinRTEnableLogging>true</CsWinRTEnableLogging> -->
     <!--<CsWinRTKeepGeneratedSources>true</CsWinRTKeepGeneratedSources>--> 
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
   <ItemGroup>

@@ -215,6 +215,7 @@ namespace cswinrt
         bool authoredType = settings.component && settings.filter.includes(type);
         auto typeNamespace = type.TypeNamespace();
         auto typeName = type.TypeName();
+        std::string_view originalTypeNamespace;
 
         if (nameType == typedef_name_type::NonProjected)
         {
@@ -224,6 +225,7 @@ namespace cswinrt
 
         if (auto proj = get_mapped_type(typeNamespace, typeName))
         {
+            originalTypeNamespace = typeNamespace;
             typeNamespace = proj->mapped_namespace;
             typeName = proj->mapped_name;
         }
@@ -281,6 +283,19 @@ namespace cswinrt
             }
 
             w.write("%.", typeNamespace);
+
+            if ((name_type_to_write == typedef_name_type::ABI || name_type_to_write == typedef_name_type::StaticAbiClass) &&
+                (originalTypeNamespace.find("Windows.UI.Xaml.Data") != std::string_view::npos || 
+                    originalTypeNamespace.find("Windows.UI.Xaml.Interop") != std::string_view::npos || 
+                    originalTypeNamespace.find("Microsoft.UI.Xaml.Data") != std::string_view::npos ||
+                    originalTypeNamespace.find("Microsoft.UI.Xaml.Interop") != std::string_view::npos) &&
+                originalTypeNamespace != typeNamespace &&
+                typeNamespace != "System.Collections" &&
+                typeName != "Type")
+            {
+                std::string_view abbrOriginalTypenamespace = originalTypeNamespace.find("Microsoft.UI.Xaml") != std::string_view::npos ? "MUX" : "WUX";
+                w.write("%.", abbrOriginalTypenamespace);
+            }
         }
 
         if (use_exclusive_to_type)

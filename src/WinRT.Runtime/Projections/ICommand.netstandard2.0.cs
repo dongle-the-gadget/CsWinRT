@@ -6,9 +6,10 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using WinRT;
 using WinRT.Interop;
 
-namespace WinRT.Xaml.Input
+namespace ABI.System.Windows.Input
 {
     [global::WinRT.ObjectReferenceWrapper(nameof(_obj)), EditorBrowsable(EditorBrowsableState.Never)]
     [Guid("E5AF3542-CA67-4081-995B-709DD13792DF")]
