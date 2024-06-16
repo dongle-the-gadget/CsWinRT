@@ -3,9 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.3.32825.248
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cswinrt", "cswinrt\cswinrt.vcxproj", "{6ACFD2B2-E8AA-4CD4-AAD8-213CE8BB2637}"
-	ProjectSection(ProjectDependencies) = postProject
-		{25244CED-966E-45F2-9711-1F51E951FF89} = {25244CED-966E-45F2-9711-1F51E951FF89}
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Files", "Files", "{96495AB4-2D86-47D1-A174-27D0B436DC98}"
 	ProjectSection(SolutionItems) = preProject

@@ -5,6 +5,9 @@ namespace Windows.UI.Xaml.Media.Animation
 
     [global::WinRT.WindowsRuntimeType("Windows.Foundation.UniversalApiContract")]
     [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Windows.UI.Xaml.Media.Animation.KeyTime))]
+#if NET
+    [global::WinRT.WinRTExposedType(typeof(global::WinRT.StructTypeDetails<KeyTime, KeyTime>))]
+#endif
     [StructLayout(LayoutKind.Sequential)]
 #if EMBED
     internal
@@ -93,6 +96,9 @@ namespace Windows.UI.Xaml.Media.Animation
 
     [global::WinRT.WindowsRuntimeType("Windows.Foundation.UniversalApiContract")]
     [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Windows.UI.Xaml.Media.Animation.RepeatBehavior))]
+#if NET
+    [global::WinRT.WinRTExposedType(typeof(global::WinRT.StructTypeDetails<RepeatBehavior, RepeatBehavior>))]
+#endif
     [StructLayout(LayoutKind.Sequential)]
 #if EMBED
     internal

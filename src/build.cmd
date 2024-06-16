@@ -1,51 +1,10 @@
 @echo off
 if /i "%cswinrt_echo%" == "on" @echo on
 
-set CsWinRTBuildNetSDKVersion=6.0.415
+set CsWinRTBuildNetSDKVersion=6.0.420
 set CsWinRTBuildNet7SDKVersion=7.0.402
+set CsWinRTBuildNet8SDKVersion=8.0.103
 set this_dir=%~dp0
-
-:dotnet
-rem Install required .NET SDK version and add to environment
-set DOTNET_ROOT=%LocalAppData%\Microsoft\dotnet
-set DOTNET_ROOT(x86)=%LocalAppData%\Microsoft\dotnet\x86
-set path=%DOTNET_ROOT%;%DOTNET_ROOT(x86)%;%path%
-set DownloadTimeout=1200
-
-rem Install .NET Version used to build projection
-powershell -NoProfile -ExecutionPolicy unrestricted -Command ^
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; ^
-&([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) ^
--Version '%CsWinRTBuildNetSDKVersion%' -InstallDir '%DOTNET_ROOT%' -Architecture 'x64' -DownloadTimeout %DownloadTimeout% ^
--AzureFeed 'https://dotnetcli.blob.core.windows.net/dotnet'
-powershell -NoProfile -ExecutionPolicy unrestricted -Command ^
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; ^
-&([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) ^
--Version '%CsWinRTBuildNetSDKVersion%' -InstallDir '%DOTNET_ROOT(x86)%' -Architecture 'x86' -DownloadTimeout %DownloadTimeout% ^
--AzureFeed 'https://dotnetcli.blob.core.windows.net/dotnet'
-rem Install .NET 7 used to build projection
-powershell -NoProfile -ExecutionPolicy unrestricted -Command ^
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; ^
-&([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) ^
--Version '%CsWinRTBuildNet7SDKVersion%' -InstallDir '%DOTNET_ROOT%' -Architecture 'x64' -DownloadTimeout %DownloadTimeout% ^
--AzureFeed 'https://dotnetcli.blob.core.windows.net/dotnet'
-rem do we need a special, other link for x86 version of this net7 version? reason being we use a preview version?
-powershell -NoProfile -ExecutionPolicy unrestricted -Command ^
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; ^
-&([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) ^
--Version '%CsWinRTBuildNet7SDKVersion%' -InstallDir '%DOTNET_ROOT(x86)%' -Architecture 'x86' -DownloadTimeout %DownloadTimeout% ^
--AzureFeed 'https://dotnetcli.blob.core.windows.net/dotnet'
-
-:globaljson
-rem Create global.json for current .NET SDK, and with allowPrerelease=true
-set global_json=%this_dir%global.json
-echo { > %global_json%
-echo   "sdk": { >> %global_json%
-echo     "version": "%CsWinRTBuildNet7SDKVersion%", >> %global_json%
-echo     "allowPrerelease": true >> %global_json%
-echo   } >> %global_json%
-echo } >> %global_json%
-
 rem Preserve above for Visual Studio launch inheritance
 setlocal ENABLEDELAYEDEXPANSION
 
@@ -154,7 +113,7 @@ if "%cswinrt_build_only%"=="true" goto :eof
 rem We set the properties of the CsWinRT.nuspec here, and pass them as the -Properties option when we call `nuget pack`
 set cswinrt_bin_dir=%this_dir%_build\%cswinrt_platform%\%cswinrt_configuration%\cswinrt\bin\
 set cswinrt_exe=%cswinrt_bin_dir%cswinrt.exe
-set interop_winmd=%this_dir%_build\%cswinrt_platform%\%cswinrt_configuration%\cswinrt\obj\merged\WinRT.Interop.winmd
+set interop_winmd=%cswinrt_bin_dir%WinRT.Interop.winmd
 set netstandard2_runtime=%this_dir%WinRT.Runtime\bin\%cswinrt_configuration%\netstandard2.0\WinRT.Runtime.dll
 set net6_runtime=%this_dir%WinRT.Runtime\bin\%cswinrt_configuration%\net6.0\WinRT.Runtime.dll
 set source_generator=%this_dir%Authoring\WinRT.SourceGenerator\bin\%cswinrt_configuration%\netstandard2.0\WinRT.SourceGenerator.dll
