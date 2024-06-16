@@ -1475,6 +1475,7 @@ private % Make_%()
     {
         auto event_type = w.write_temp("%", bind<write_type_name>(get_type_semantics(event.EventType()), typedef_name_type::Projected, false));
 
+        // Windows.UI.Xaml.Input.ICommand has a lower-fidelity type mapping where the type of the event handler doesn't project one-to-one
         // so we need to hard-code mapping the event handler from the mapped WinRT type to the correct .NET type.
         if (event.Name() == "CanExecuteChanged" && event_type == "global::System.EventHandler<object>")
         {
@@ -3044,26 +3045,6 @@ set => %.Indexer_Set(%, index, value);
 visibility, self, objref_name);
     }
 
-    void write_notify_data_error_info_members_using_idic(writer& w, std::string_view target, bool emit_explicit)
-    {
-        auto self = emit_explicit ? "global::System.ComponentModel.INotifyDataErrorInfo." : "";
-        auto visibility = emit_explicit ? "" : "public ";
-
-        w.write(R"(
-%global::System.Collections.IEnumerable %GetErrors(string propertyName) => %.GetErrors(propertyName);
-
-%event global::System.EventHandler<global::System.ComponentModel.DataErrorsChangedEventArgs> %ErrorsChanged
-{
-add => %.ErrorsChanged += value;
-remove => %.ErrorsChanged -= value;
-}
-%bool %HasErrors {get => %.HasErrors; }
-)", 
-    visibility, self, target,
-    visibility, self, target, target,
-    visibility, self, target);
-    }
-
     void write_custom_mapped_type_members(writer& w, std::string_view target, mapped_type const& mapping, bool is_private, bool call_static_abi_methods, std::string objref_name)
     {
         if (mapping.abi_name == "IIterable`1") 
@@ -3143,7 +3124,14 @@ remove => %.ErrorsChanged -= value;
         }
         else if (mapping.mapped_namespace == "System" && mapping.mapped_name == "IDisposable")
         {
-            write_idisposable_members(w, target, is_private);
+            if (call_static_abi_methods)
+            {
+                write_idisposable_members_using_static_abi_methods(w, is_private, objref_name);
+            }
+            else
+            {
+                write_idisposable_members(w, target, is_private);
+            }
         }
     }
 
