@@ -74,4 +74,13 @@
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
 
+  <Target Name="_ResolveResolvedMatchingContract" BeforeTargets="ValidateApiCompatForSrc;RunMatchingRefApiCompat" Condition="'$(TargetFramework)' == 'net6.0'">
+    <ItemGroup>
+      <_ReferencePathDirectories Include="@(ReferencePath -> '%(RootDir)%(Directory)')" />
+      <ResolvedMatchingContract Include="$(NuGetPackageRoot)\Microsoft.Windows.CsWinRT\$(CsWinRTApiCompatVersion)\lib\net6.0\$(TargetFileName)">
+        <DependencyPaths>@(_ReferencePathDirectories-&gt;Distinct(), ',')</DependencyPaths>
+      </ResolvedMatchingContract>
+    </ItemGroup>
+  </Target>
+
 </Project>
