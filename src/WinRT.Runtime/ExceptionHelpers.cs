@@ -93,8 +93,7 @@ namespace WinRT
                 setRestrictedErrorInfo = (delegate* unmanaged[Stdcall]<IntPtr, int>)Platform.GetProcAddress(winRTErrorModule, setRestrictedErrorInfoFuncName);
             }
 
-                return true;
-            }
+            return true;
         }
 
         public static void ThrowExceptionForHR(int hr)

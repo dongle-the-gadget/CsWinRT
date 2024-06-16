@@ -109,7 +109,7 @@ namespace WinRT
         }
 
         /// <summary>
-        /// Gets a value indicating whether or not <see cref="ABI.Microsoft.UI.Xaml.Data.ManagedCustomPropertyProviderVftbl"/> should be enabled (defaults to <see langword="true"/>).
+        /// Gets a value indicating whether or not <see cref="ABI.Windows.UI.Xaml.Data.ManagedCustomPropertyProviderVftbl"/> should be enabled (defaults to <see langword="true"/>).
         /// </summary>
         public static bool EnableICustomPropertyProviderSupport
         {
