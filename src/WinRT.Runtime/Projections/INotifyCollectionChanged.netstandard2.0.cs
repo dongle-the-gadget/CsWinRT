@@ -10,7 +10,7 @@ using WinRT.Interop;
 namespace ABI.System.Collections.Specialized
 {
     [global::WinRT.ObjectReferenceWrapper(nameof(_obj)), EditorBrowsable(EditorBrowsableState.Never)]
-    [Guid("CF75D69C-F2F4-486B-B302-BB4C09BAEBFA")]
+    [Guid("4cf68d33-e3f2-4964-b85e-945b4f7e2f21")]
 #if EMBED
     internal
 #else
@@ -18,7 +18,7 @@ namespace ABI.System.Collections.Specialized
 #endif
     unsafe class INotifyCollectionChanged : global::System.Collections.Specialized.INotifyCollectionChanged
     {
-        [Guid("CF75D69C-F2F4-486B-B302-BB4C09BAEBFA")]
+        [Guid("4cf68d33-e3f2-4964-b85e-945b4f7e2f21")]
         public struct Vftbl
         {
             internal IInspectable.Vftbl IInspectableVftbl;
@@ -112,7 +112,7 @@ namespace ABI.System.Collections.Specialized
             _obj = obj;
 
             _CollectionChanged =
-                new NotifyCollectionChangedEventSource(_obj,
+                new NotifyCollectionChangedEventHandlerEventSource(_obj,
                 _obj.Vftbl.add_CollectionChanged_0,
                 _obj.Vftbl.remove_CollectionChanged_1);
         }
@@ -123,6 +123,6 @@ namespace ABI.System.Collections.Specialized
             remove => _CollectionChanged.Unsubscribe(value);
         }
 
-        private NotifyCollectionChangedEventSource _CollectionChanged;
+        private NotifyCollectionChangedEventHandlerEventSource _CollectionChanged;
     }
 }

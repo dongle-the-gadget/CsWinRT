@@ -490,7 +490,7 @@ namespace WinRT.Interop
             }
         }
 
-        /// <summary>The IID for <c>PropertyChangedEventArgsRuntimeClassFactory</c> (7C0C27A8-0B41-5070-B160-FC9AE960A36C).</summary>
+        /// <summary>The IID for <c>PropertyChangedEventArgsRuntimeClassFactory</c> (6DCC9C03-E0C7-4EEE-8EA9-37E3406EEB1C).</summary>
         internal static ref readonly Guid IID_PropertyChangedEventArgsRuntimeClassFactory
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]   
@@ -498,17 +498,17 @@ namespace WinRT.Interop
             {
                 ReadOnlySpan<byte> data = new byte[]
                 {
-                    0xA8, 0x27, 0x0C, 0x7C,
-                    0x41, 0x0B,
-                    0x70, 0x50,
-                    0xB1,
-                    0x60,
-                    0xFC,
-                    0x9A,
-                    0xE9,
-                    0x60,
-                    0xA3,
-                    0x6C
+                    0x03, 0x9C, 0xCC, 0x6D,
+                    0xC7, 0xE0,
+                    0xEE, 0x4E,
+                    0x8E,
+                    0xA9,
+                    0x37,
+                    0xE3,
+                    0x40,
+                    0x6E,
+                    0xEB,
+                    0x1C
                 };
 
                 return ref Unsafe.As<byte, Guid>(ref MemoryMarshal.GetReference(data));
@@ -640,7 +640,7 @@ namespace WinRT.Interop
             }
         }
 
-        /// <summary>The IID for <c>PropertyChangedEventHandler</c> (E3DE52F6-1E32-5DA6-BB2D-B5B6096C962D).</summary>
+        /// <summary>The IID for <c>PropertyChangedEventHandler</c> (50f19c16-0a22-4d8e-a089-1ea9951657d2).</summary>
         internal static ref readonly Guid IID_PropertyChangedEventHandler
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]   
@@ -648,24 +648,24 @@ namespace WinRT.Interop
             {
                 ReadOnlySpan<byte> data = new byte[]
                 {
-                    0xF6, 0x52, 0xDE, 0xE3,
-                    0x32, 0x1E,
-                    0xA6, 0x5D,
-                    0xBB,
-                    0x2D,
-                    0xB5,
-                    0xB6,
-                    0x09,
-                    0x6C,
-                    0x96,
-                    0x2D
+                    0x16, 0x9C, 0xF1, 0x50,
+                    0x22, 0x0A,
+                    0x8E, 0x4D,
+                    0xA0,
+                    0x89,
+                    0x1E,
+                    0xA9,
+                    0x95,
+                    0x16,
+                    0x57,
+                    0xD2
                 };
 
                 return ref Unsafe.As<byte, Guid>(ref MemoryMarshal.GetReference(data));
             }
         }
 
-        /// <summary>The IID for <c>NotifyCollectionChangedEventHandler</c> (8B0909DC-2005-5D93-BF8A-725F017BAA8D).</summary>
+        /// <summary>The IID for <c>NotifyCollectionChangedEventHandler</c> (ca10b37c-f382-4591-8557-5e24965279b0).</summary>
         internal static ref readonly Guid IID_NotifyCollectionChangedEventHandler
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]   
@@ -673,17 +673,17 @@ namespace WinRT.Interop
             {
                 ReadOnlySpan<byte> data = new byte[]
                 {
-                    0xDC, 0x09, 0x09, 0x8B,
-                    0x05, 0x20,
-                    0x93, 0x5D,
-                    0xBF,
-                    0x8A,
-                    0x72,
-                    0x5F,
-                    0x01,
-                    0x7B,
-                    0xAA,
-                    0x8D
+                    0x7C, 0xB3, 0x10, 0xCA,
+                    0x82, 0xF3,
+                    0x91, 0x45,
+                    0x85,
+                    0x57,
+                    0x5E,
+                    0x24,
+                    0x96,
+                    0x52,
+                    0x79,
+                    0xB0
                 };
 
                 return ref Unsafe.As<byte, Guid>(ref MemoryMarshal.GetReference(data));
