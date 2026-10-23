@@ -125,7 +125,7 @@ jobs:
           /bl:cswinrt.binlog
 
       - name: Upload binlog
-        if: !cancelled()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: binlog_release_${{ matrix.platform }}
