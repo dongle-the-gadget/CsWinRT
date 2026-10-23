@@ -121,7 +121,15 @@ jobs:
         run: >-
           msbuild src\cswinrt.slnx /restore /m
           /p:Platform=${{ matrix.platform }} /p:Configuration=release
-          "/p:CIBuildReason=CI,VersionNumber=$env:VersionNumber,VersionString=$env:BuildNumber,AssemblyVersionNumber=$env:WinRTRuntimeAssemblyVersion,GenerateTestProjection=true,AllowedReferenceRelatedFileExtensions=`".xml;.pri;.dll.config;.exe.config`",PublishBuildTool=true,BuildToolArch=$env:CsWinRTBuildToolsArch,ContinuousIntegrationBuild=true"
+          /p:CIBuildReason=CI
+          "/p:VersionNumber=$env:VersionNumber"
+          "/p:VersionString=$env:BuildNumber"
+          "/p:AssemblyVersionNumber=$env:WinRTRuntimeAssemblyVersion"
+          /p:GenerateTestProjection=true
+          "/p:AllowedReferenceRelatedFileExtensions=.xml%3B.pri%3B.dll.config%3B.exe.config"
+          /p:PublishBuildTool=true
+          "/p:BuildToolArch=$env:CsWinRTBuildToolsArch"
+          /p:ContinuousIntegrationBuild=true
           /bl:cswinrt.binlog
 
       - name: Upload binlog
