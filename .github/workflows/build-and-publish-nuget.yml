@@ -1,0 +1,326 @@
+name: Build and publish NuGet packages
+
+# Port of the Azure Pipelines templates in build/AzurePipelineTemplates (CsWinRT-Build-Steps.yml,
+# CsWinRT-PublishToNuGet-Steps.yml) that builds the Microsoft.Windows.CsWinRT package (which also
+# carries the precompiled Windows SDK projections) and publishes it to GitHub Packages.
+
+on:
+  push:
+    branches:
+      - staging/3.0
+
+permissions:
+  contents: read
+
+env:
+  MajorVersion: '3'
+  MinorVersion: '0'
+  PatchVersion: '0'
+  WinRTRuntimeAssemblyVersion: '3.0.0.0'
+  DotnetVersion: '10.0.402'
+  TestWinRTRef: 'd15a32b2f7c22b022e01e09d893a19fe0b3043f8'
+  # Windows SDK builds and the SDK Contracts package version used for each of them
+  SdkPackageVersions: >-
+    {"17763":"10.0.17763.1000","18362":"10.0.18362.2007","19041":"10.0.19041.2","22000":"10.0.22000.197","22621":"10.0.22621.3233","26100":"10.0.26100.7705"}
+
+jobs:
+  version:
+    name: Compute version
+    runs-on: windows-2025
+    outputs:
+      nuget_version: ${{ steps.version.outputs.nuget_version }}
+      build_number: ${{ steps.version.outputs.build_number }}
+      version_number: ${{ steps.version.outputs.version_number }}
+    steps:
+      - id: version
+        shell: pwsh
+        run: |
+          # NuGet version: <major>.<minor>.<patch>-preview.<yyMMdd>
+          $date = [DateTime]::UtcNow.ToString('yyMMdd')
+          $nugetVersion = "$env:MajorVersion.$env:MinorVersion.$env:PatchVersion-preview.$date"
+          $buildNumber = $nugetVersion
+
+          $versionNumber = "$env:MajorVersion.$env:MinorVersion.$env:PatchVersion.0"
+
+          "build_number=$buildNumber" >> $env:GITHUB_OUTPUT
+          "version_number=$versionNumber" >> $env:GITHUB_OUTPUT
+          "nuget_version=$nugetVersion" >> $env:GITHUB_OUTPUT
+          Write-Host "Build number: $buildNumber, version number: $versionNumber, NuGet version: $nugetVersion"
+
+  build:
+    name: Build (${{ matrix.platform }}, release)
+    needs: version
+    runs-on: windows-2025
+    strategy:
+      fail-fast: true
+      matrix:
+        platform: [x86, x64, arm64]
+    env:
+      BuildPlatform: ${{ matrix.platform }}
+      BuildConfiguration: release
+      # x86 builds use the x64 build tools
+      CsWinRTBuildToolsArch: ${{ matrix.platform == 'x86' && 'x64' || matrix.platform }}
+      StagingFolder: ${{ github.workspace }}\staging
+      BuildNumber: ${{ needs.version.outputs.build_number }}
+      VersionNumber: ${{ needs.version.outputs.version_number }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: microsoft/TestWinRT
+          ref: ${{ env.TestWinRTRef }}
+          path: src/TestWinRT
+
+      # Install x86 first so that it isn't the first on PATH
+      - name: Use .NET SDK x86
+        if: matrix.platform == 'x86'
+        shell: pwsh
+        run: |
+          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+          &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) -Version $env:DotnetVersion -Architecture x86 -InstallDir "$env:LocalAppData\Microsoft\dotnet\x86\"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "DOTNET_ROOT(x86)=$env:LocalAppData\Microsoft\dotnet\x86\" >> $env:GITHUB_ENV
+
+      # arm64 hosting binaries are only available through this install
+      - name: Use .NET SDK arm64
+        if: matrix.platform == 'arm64'
+        shell: pwsh
+        run: |
+          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+          &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) -Version $env:DotnetVersion -Architecture arm64 -InstallDir "$env:LocalAppData\Microsoft\dotnet\arm64\"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DotnetVersion }}
+
+      - name: Verify .NET SDK
+        run: |
+          where dotnet
+          dotnet --info
+
+      - uses: microsoft/setup-msbuild@v2
+
+      - uses: NuGet/setup-nuget@v2
+
+      # Native AOT publishing of the build tools needs vswhere.exe on PATH
+      - name: Add vswhere to PATH
+        shell: pwsh
+        run: '"${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer" >> $env:GITHUB_PATH'
+
+      - name: Restore cswinrt.slnx
+        run: msbuild src\cswinrt.slnx /p:RestorePackagesConfig=true /t:restore /p:CIBuildReason=CI /p:Platform=${{ matrix.platform }} /p:Configuration=release
+
+      - name: NuGet restore testwinrt.sln
+        run: nuget restore src\testwinrt\test.sln -ConfigFile NuGet.config
+
+      # PDBs being copied for each project reference can cause out of disk space issues, so
+      # AllowedReferenceRelatedFileExtensions is used to avoid them being copied.
+      - name: Build cswinrt.slnx
+        run: >-
+          msbuild src\cswinrt.slnx /restore /m
+          /p:Platform=${{ matrix.platform }} /p:Configuration=release
+          "/p:CIBuildReason=CI,VersionNumber=$env:VersionNumber,VersionString=$env:BuildNumber,AssemblyVersionNumber=$env:WinRTRuntimeAssemblyVersion,GenerateTestProjection=true,AllowedReferenceRelatedFileExtensions=`".xml;.pri;.dll.config;.exe.config`",PublishBuildTool=true,BuildToolArch=$env:CsWinRTBuildToolsArch,ContinuousIntegrationBuild=true"
+          /bl:cswinrt.binlog
+
+      - name: Upload binlog
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: binlog_release_${{ matrix.platform }}
+          path: cswinrt.binlog
+
+      - name: Stage build outputs
+        shell: pwsh
+        run: |
+          $p = $env:BuildPlatform
+          $src = "$env:GITHUB_WORKSPACE\src"
+          $out = $env:StagingFolder
+
+          function Stage($from, $to, [string[]]$files) {
+              New-Item -ItemType Directory -Force -Path "$out\$to" | Out-Null
+              foreach ($f in $files) {
+                  $found = Get-ChildItem -Path "$from\$f" -File -ErrorAction SilentlyContinue
+                  if (-not $found) { throw "Missing '$f' in '$from'" }
+                  $found | Copy-Item -Destination "$out\$to" -Force
+              }
+          }
+
+          Stage "$src\_build\$p\release\WinRT.Host\bin" 'native' 'WinRT.Host.dll','WinRT.Host.pdb','WinRT.Host.dll.mui'
+
+          if ($p -eq 'x86') {
+              Stage "$src\WinRT.Internal\bin\release\net10.0-windows10.0.26100.1" 'native' 'WindowsRuntime.Internal.winmd'
+              Stage "$src\Authoring\WinRT.SourceGenerator2\bin\release\net10.0" 'net10.0' 'WinRT.SourceGenerator.dll','WinRT.SourceGenerator.pdb'
+              Stage "$src\WinRT.Runtime2\bin\release\net10.0" 'net10.0' 'WinRT.Runtime.dll','WinRT.Runtime.pdb'
+              Stage "$src\Authoring\WinRT.Host.Shim\bin\release\net10.0" 'net10.0' 'WinRT.Host.Shim.dll','WinRT.Host.Shim.pdb'
+              Stage "$src\WinRT.Generator.Tasks\bin\release\netstandard2.0" 'netstandard2.0' 'WinRT.Generator.Tasks.dll','WinRT.Generator.Tasks.pdb'
+          }
+          else {
+              $tools = @{
+                  'WinRT.Interop.Generator'        = 'cswinrtinteropgen'
+                  'WinRT.Impl.Generator'           = 'cswinrtimplgen'
+                  'WinRT.Projection.Generator'     = 'cswinrtprojectiongen'
+                  'WinRT.Projection.Ref.Generator' = 'cswinrtprojectionrefgen'
+                  'WinRT.WinMD.Generator'          = 'cswinrtwinmdgen'
+              }
+              foreach ($dir in $tools.Keys) {
+                  $name = $tools[$dir]
+                  Stage "$src\$dir\bin\release\net10.0\win-$p\publish" 'net10.0\native' "$name.exe","$name.pdb"
+              }
+          }
+
+      # Build WinRT.Runtime with implementation-only types stripped out. Its normal binary outputs go to a
+      # temporary folder so they don't overwrite the implementation assembly needed for the SDK projections.
+      # The metadata-only reference assembly is emitted under 'obj\release\net10.0\ref' and staged below.
+      - name: Build WinRT.Runtime reference assembly
+        if: matrix.platform == 'x86'
+        run: >-
+          msbuild src\WinRT.Runtime2\WinRT.Runtime.csproj /restore
+          /p:Configuration=release
+          "/p:VersionNumber=$env:VersionNumber,VersionString=$env:BuildNumber,AssemblyVersionNumber=$env:WinRTRuntimeAssemblyVersion,CsWinRTBuildReferenceAssembly=true,ContinuousIntegrationBuild=true"
+          "/p:BaseOutputPath=$env:RUNNER_TEMP\WinRT.Runtime.Reference\"
+
+      - name: Stage WinRT.Runtime reference assembly
+        if: matrix.platform == 'x86'
+        shell: pwsh
+        run: |
+          $ref = "$env:StagingFolder\net10.0\ref"
+          New-Item -ItemType Directory -Force -Path $ref | Out-Null
+          Copy-Item "$env:GITHUB_WORKSPACE\src\WinRT.Runtime2\obj\release\net10.0\ref\WinRT.Runtime.dll" $ref -Force
+          Copy-Item "$env:RUNNER_TEMP\WinRT.Runtime.Reference\release\net10.0\WinRT.Runtime.xml" $ref -Force
+
+      # Build the merged Windows SDK projections for each supported OS version. Package versions come
+      # from the SdkPackageVersions variable.
+      - name: Build Windows SDK projections
+        if: matrix.platform == 'x86'
+        shell: pwsh
+        run: |
+          $versions = [ordered]@{}
+          ($env:SdkPackageVersions | ConvertFrom-Json).PSObject.Properties | ForEach-Object { $versions[$_.Name] = $_.Value }
+
+          foreach ($build in $versions.Keys) {
+              foreach ($xaml in $false, $true) {
+                  $msbuildArgs = @(
+                      'src\WinRT.Sdk.Projection\WinRT.Sdk.Projection.csproj', '/restore',
+                      '/p:Configuration=Release',
+                      "/p:WindowsSdkBuild=$build", "/p:SdkPackageVersion=$($versions[$build])",
+                      "/p:BuildToolArch=$env:CsWinRTBuildToolsArch")
+                  if ($xaml) { $msbuildArgs += '/p:WindowsSdkXaml=true' }
+
+                  Write-Host "::group::Build WinRT.Sdk.$(if ($xaml) { 'Xaml.' })Projection ($build)"
+                  msbuild @msbuildArgs
+                  $code = $LASTEXITCODE
+                  Write-Host '::endgroup::'
+                  if ($code -ne 0) { exit $code }
+              }
+          }
+
+          $impl = "$env:StagingFolder\impl"
+          foreach ($build in $versions.Keys) {
+              New-Item -ItemType Directory -Force -Path "$impl\$build" | Out-Null
+              Copy-Item "src\WinRT.Sdk.Projection\bin\Release\$build\WinRT.Sdk.Projection.dll" "$impl\$build" -Force
+              Copy-Item "src\WinRT.Sdk.Projection\bin\Release\$build\WinRT.Sdk.Xaml.Projection.dll" "$impl\$build" -Force
+          }
+
+      - name: Upload staged outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: drop_BuildAndTest_release_${{ matrix.platform }}
+          path: staging
+          if-no-files-found: error
+
+  package:
+    name: Pack and publish
+    needs: [version, build]
+    runs-on: windows-2025
+    permissions:
+      contents: read
+      packages: write
+    env:
+      NugetVersion: ${{ needs.version.outputs.nuget_version }}
+      PackagesDir: ${{ github.workspace }}\out\packages
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: drop_BuildAndTest_release_x86
+          path: release_x86
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: drop_BuildAndTest_release_x64
+          path: release_x64
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: drop_BuildAndTest_release_arm64
+          path: release_arm64
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DotnetVersion }}
+
+      - uses: NuGet/setup-nuget@v2
+
+      - name: Add SDK projection entries to nuspec
+        shell: pwsh
+        run: |
+          $nuspecPath = "$env:GITHUB_WORKSPACE\nuget\Microsoft.Windows.CsWinRT.nuspec"
+          $entries = foreach ($dir in Get-ChildItem "$env:GITHUB_WORKSPACE\release_x86\impl" -Directory | Sort-Object Name) {
+              foreach ($dll in 'WinRT.Sdk.Projection.dll', 'WinRT.Sdk.Xaml.Projection.dll') {
+                  "    <file src=`"$($dir.FullName)\$dll`" target=`"impl\net10\$($dir.Name)\`"/>"
+              }
+          }
+          $content = (Get-Content $nuspecPath -Raw).Replace('  </files>', ($entries -join "`n") + "`n  </files>")
+          Set-Content $nuspecPath $content
+
+      - name: NuGet pack
+        shell: pwsh
+        run: |
+          $w = $env:GITHUB_WORKSPACE
+          $props = [ordered]@{
+              cswinrt_nuget_version      = $env:NugetVersion
+              interop_winmd              = "$w\release_x86\native\WindowsRuntime.Internal.winmd"
+              net10_runtime              = "$w\release_x86\net10.0\WinRT.Runtime.dll"
+              net10_runtime_ref          = "$w\release_x86\net10.0\ref\WinRT.Runtime.dll"
+              net10_runtime_ref_xml      = "$w\release_x86\net10.0\ref\WinRT.Runtime.xml"
+              source_generator           = "$w\release_x86\net10.0\WinRT.SourceGenerator.dll"
+              winrt_shim                 = "$w\release_x86\net10.0\WinRT.Host.Shim.dll"
+              run_cswinrt_generator_task = "$w\release_x86\netstandard2.0\WinRT.Generator.Tasks.dll"
+              branch                     = $env:GITHUB_REF_NAME
+              commit                     = $env:GITHUB_SHA
+          }
+          foreach ($arch in 'x86', 'x64', 'arm64') {
+              $props["winrt_host_$arch"] = "$w\release_$arch\native\WinRT.Host.dll"
+              $props["winrt_host_resource_$arch"] = "$w\release_$arch\native\WinRT.Host.dll.mui"
+          }
+          foreach ($arch in 'x64', 'arm64') {
+              foreach ($tool in 'interopgen', 'implgen', 'projectiongen', 'projectionrefgen', 'winmdgen') {
+                  $props["cswinrt${tool}_$arch"] = "$w\release_$arch\net10.0\native\cswinrt$tool.exe"
+              }
+          }
+          $buildProperties = ($props.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" }) -join ';'
+
+          New-Item -ItemType Directory -Force -Path $env:PackagesDir | Out-Null
+          nuget pack nuget\Microsoft.Windows.CsWinRT.nuspec -Properties $buildProperties -OutputDirectory $env:PackagesDir -NonInteractive
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Upload NuGet packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: drop_Nuget
+          path: out\packages\*.nupkg
+          if-no-files-found: error
+
+      # - name: Publish to GitHub Packages
+      #   shell: pwsh
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     dotnet nuget push "$env:PackagesDir\*.nupkg" `
+      #       --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" `
+      #       --api-key $env:GITHUB_TOKEN `
+      #       --skip-duplicate
+      #     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
