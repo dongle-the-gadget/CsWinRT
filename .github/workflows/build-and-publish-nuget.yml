@@ -200,8 +200,9 @@ jobs:
 
       # Build the merged Windows SDK projections for each supported OS version. Package versions come
       # from the SdkPackageVersions variable.
+      # Temporarily disabled: remove 'false &&' to re-enable.
       - name: Build Windows SDK projections
-        if: matrix.platform == 'x86'
+        if: false && matrix.platform == 'x86'
         shell: pwsh
         run: |
           $versions = [ordered]@{}
@@ -276,6 +277,10 @@ jobs:
         shell: pwsh
         run: |
           $nuspecPath = "$env:GITHUB_WORKSPACE\nuget\Microsoft.Windows.CsWinRT.nuspec"
+          if (-not (Test-Path "$env:GITHUB_WORKSPACE\release_x86\impl")) {
+              Write-Host 'No precompiled SDK projections were built, skipping.'
+              exit 0
+          }
           $entries = foreach ($dir in Get-ChildItem "$env:GITHUB_WORKSPACE\release_x86\impl" -Directory | Sort-Object Name) {
               foreach ($dll in 'WinRT.Sdk.Projection.dll', 'WinRT.Sdk.Xaml.Projection.dll') {
                   "    <file src=`"$($dir.FullName)\$dll`" target=`"impl\net10\$($dir.Name)\`"/>"
