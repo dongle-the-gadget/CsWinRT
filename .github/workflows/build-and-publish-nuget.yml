@@ -7,7 +7,7 @@ name: Build and publish NuGet packages
 on:
   push:
     branches:
-      - staging/3.0
+      - gha/3.0
 
 permissions:
   contents: read
