@@ -55,7 +55,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        platform: [x64, arm64]
+        platform: [x86, x64, arm64]
     env:
       BuildPlatform: ${{ matrix.platform }}
       BuildConfiguration: release
@@ -73,6 +73,16 @@ jobs:
           repository: microsoft/TestWinRT
           ref: ${{ env.TestWinRTRef }}
           path: src/TestWinRT
+
+      # Install x86 first so that it isn't the first on PATH
+      - name: Install x86 .NET SDK
+        if: matrix.platform == 'x86'
+        shell: pwsh
+        run: |
+          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+          &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) -Version $env:DotnetVersion -Architecture x86 -InstallDir "$env:LocalAppData\Microsoft\dotnet\x86\"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "DOTNET_ROOT(x86)=$env:LocalAppData\Microsoft\dotnet\x86\" >> $env:GITHUB_ENV
 
       # arm64 hosting binaries are only available through this install
       - name: Install arm64 .NET SDK
