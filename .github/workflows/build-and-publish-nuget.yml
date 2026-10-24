@@ -182,7 +182,7 @@ jobs:
       # temporary folder so they don't overwrite the implementation assembly needed for the SDK projections.
       # The metadata-only reference assembly is emitted under 'obj\release\net10.0\ref' and staged below.
       - name: Build WinRT.Runtime reference assembly
-        if: matrix.platform == 'x64'
+        if: matrix.platform == 'x86'
         run: >-
           msbuild src\WinRT.Runtime2\WinRT.Runtime.csproj /restore
           /p:Configuration=release
@@ -190,7 +190,7 @@ jobs:
           "/p:BaseOutputPath=$env:RUNNER_TEMP\WinRT.Runtime.Reference\"
 
       - name: Stage WinRT.Runtime reference assembly
-        if: matrix.platform == 'x64'
+        if: matrix.platform == 'x86'
         shell: pwsh
         run: |
           $ref = "$env:StagingFolder\net10.0\ref"
@@ -202,7 +202,7 @@ jobs:
       # from the SdkPackageVersions variable.
       # Temporarily disabled: remove 'false &&' to re-enable.
       - name: Build Windows SDK projections
-        if: false && matrix.platform == 'x64'
+        if: false && matrix.platform == 'x86'
         shell: pwsh
         run: |
           $versions = [ordered]@{}
