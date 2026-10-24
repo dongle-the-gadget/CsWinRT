@@ -33,6 +33,7 @@ jobs:
       version_number: ${{ steps.version.outputs.version_number }}
     steps:
       - id: version
+        name: Compute version
         shell: pwsh
         run: |
           # NuGet version: <major>.<minor>.<patch>-preview.<yyMMdd>
@@ -54,36 +55,27 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        platform: [x86, x64, arm64]
+        platform: [x64, arm64]
     env:
       BuildPlatform: ${{ matrix.platform }}
       BuildConfiguration: release
-      # x86 builds use the x64 build tools
-      CsWinRTBuildToolsArch: ${{ matrix.platform == 'x86' && 'x64' || matrix.platform }}
+      CsWinRTBuildToolsArch: ${{ matrix.platform }}
       StagingFolder: ${{ github.workspace }}\staging
       BuildNumber: ${{ needs.version.outputs.build_number }}
       VersionNumber: ${{ needs.version.outputs.version_number }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+        name: Checkout
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+        name: Checkout TestWinRT
         with:
           repository: microsoft/TestWinRT
           ref: ${{ env.TestWinRTRef }}
           path: src/TestWinRT
 
-      # Install x86 first so that it isn't the first on PATH
-      - name: Use .NET SDK x86
-        if: matrix.platform == 'x86'
-        shell: pwsh
-        run: |
-          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-          &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) -Version $env:DotnetVersion -Architecture x86 -InstallDir "$env:LocalAppData\Microsoft\dotnet\x86\"
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          "DOTNET_ROOT(x86)=$env:LocalAppData\Microsoft\dotnet\x86\" >> $env:GITHUB_ENV
-
       # arm64 hosting binaries are only available through this install
-      - name: Use .NET SDK arm64
+      - name: Install arm64 .NET SDK
         if: matrix.platform == 'arm64'
         shell: pwsh
         run: |
@@ -91,18 +83,16 @@ jobs:
           &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) -Version $env:DotnetVersion -Architecture arm64 -InstallDir "$env:LocalAppData\Microsoft\dotnet\arm64\"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - uses: actions/setup-dotnet@v4
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: ${{ env.DotnetVersion }}
 
-      - name: Verify .NET SDK
-        run: |
-          where dotnet
-          dotnet --info
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
 
-      - uses: microsoft/setup-msbuild@v2
-
-      - uses: NuGet/setup-nuget@v2
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v4
 
       # Native AOT publishing of the build tools needs vswhere.exe on PATH
       - name: Add vswhere to PATH
@@ -112,7 +102,7 @@ jobs:
       - name: Restore cswinrt.slnx
         run: msbuild src\cswinrt.slnx /p:RestorePackagesConfig=true /t:restore /p:CIBuildReason=CI /p:Platform=${{ matrix.platform }} /p:Configuration=release
 
-      - name: NuGet restore testwinrt.sln
+      - name: Restore testwinrt.sln
         run: nuget restore src\testwinrt\test.sln -ConfigFile NuGet.config
 
       # PDBs being copied for each project reference can cause out of disk space issues, so
@@ -134,7 +124,7 @@ jobs:
 
       - name: Upload binlog
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: binlog_release_${{ matrix.platform }}
           path: cswinrt.binlog
@@ -182,7 +172,7 @@ jobs:
       # temporary folder so they don't overwrite the implementation assembly needed for the SDK projections.
       # The metadata-only reference assembly is emitted under 'obj\release\net10.0\ref' and staged below.
       - name: Build WinRT.Runtime reference assembly
-        if: matrix.platform == 'x86'
+        if: matrix.platform == 'x64'
         run: >-
           msbuild src\WinRT.Runtime2\WinRT.Runtime.csproj /restore
           /p:Configuration=release
@@ -190,7 +180,7 @@ jobs:
           "/p:BaseOutputPath=$env:RUNNER_TEMP\WinRT.Runtime.Reference\"
 
       - name: Stage WinRT.Runtime reference assembly
-        if: matrix.platform == 'x86'
+        if: matrix.platform == 'x64'
         shell: pwsh
         run: |
           $ref = "$env:StagingFolder\net10.0\ref"
@@ -202,7 +192,7 @@ jobs:
       # from the SdkPackageVersions variable.
       # Temporarily disabled: remove 'false &&' to re-enable.
       - name: Build Windows SDK projections
-        if: false && matrix.platform == 'x86'
+        if: false && matrix.platform == 'x64'
         shell: pwsh
         run: |
           $versions = [ordered]@{}
@@ -233,7 +223,7 @@ jobs:
           }
 
       - name: Upload staged outputs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: drop_BuildAndTest_release_${{ matrix.platform }}
           path: staging
@@ -250,28 +240,28 @@ jobs:
       NugetVersion: ${{ needs.version.outputs.nuget_version }}
       PackagesDir: ${{ github.workspace }}\out\packages
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v7
 
-      - uses: actions/download-artifact@v4
-        with:
-          name: drop_BuildAndTest_release_x86
-          path: release_x86
-
-      - uses: actions/download-artifact@v4
+      - name: Download x64 build artifacts
+        uses: actions/download-artifact@v8
         with:
           name: drop_BuildAndTest_release_x64
           path: release_x64
 
-      - uses: actions/download-artifact@v4
+      - name: Download arm64 build artifacts
+        uses: actions/download-artifact@v8
         with:
           name: drop_BuildAndTest_release_arm64
           path: release_arm64
 
-      - uses: actions/setup-dotnet@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: ${{ env.DotnetVersion }}
 
-      - uses: NuGet/setup-nuget@v2
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v4
 
       - name: Add SDK projection entries to nuspec
         shell: pwsh
@@ -321,7 +311,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Upload NuGet packages
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: drop_Nuget
           path: out\packages\*.nupkg
